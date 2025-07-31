@@ -1,0 +1,5 @@
+../Core/Src/i3g4250d.c:6:13:I3G4250D_Write	24	static
+../Core/Src/i3g4250d.c:13:13:I3G4250D_Read	16	static
+../Core/Src/i3g4250d.c:23:6:I3G4250D_Init	8	static
+../Core/Src/i3g4250d.c:34:9:I3G4250D_ReadID	16	static
+../Core/Src/i3g4250d.c:40:6:I3G4250D_ReadGyro	40	static

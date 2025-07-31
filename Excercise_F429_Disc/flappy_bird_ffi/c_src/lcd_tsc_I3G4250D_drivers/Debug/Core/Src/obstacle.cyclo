@@ -1,0 +1,6 @@
+../Core/Src/obstacle.c:17:10:generate_obstacle_height	2
+../Core/Src/obstacle.c:32:10:generate_obstacle_gap	2
+../Core/Src/obstacle.c:49:6:display_obstacle	3
+../Core/Src/obstacle.c:124:6:move_obstacle	1
+../Core/Src/obstacle.c:132:6:score_card_background	1
+../Core/Src/obstacle.c:143:9:get_obstacle_speed	1
