@@ -1,0 +1,5 @@
+../Core/Src/i3g4250d.c:6:13:I3G4250D_Write	1
+../Core/Src/i3g4250d.c:13:13:I3G4250D_Read	2
+../Core/Src/i3g4250d.c:23:6:I3G4250D_Init	1
+../Core/Src/i3g4250d.c:34:9:I3G4250D_ReadID	1
+../Core/Src/i3g4250d.c:40:6:I3G4250D_ReadGyro	1
