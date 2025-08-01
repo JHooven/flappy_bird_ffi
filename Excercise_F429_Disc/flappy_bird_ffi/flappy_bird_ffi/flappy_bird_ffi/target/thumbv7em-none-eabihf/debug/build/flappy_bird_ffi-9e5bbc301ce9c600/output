@@ -1,0 +1,114 @@
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_cortex.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_cortex.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_dma.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_dma.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_dma_ex.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_dma_ex.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_exti.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_exti.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_flash.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_flash.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_flash_ex.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_flash_ex.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_flash_ramfunc.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_flash_ramfunc.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_gpio.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_gpio.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_pwr.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_pwr.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_pwr_ex.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_pwr_ex.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_rcc.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_rcc.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_rcc_ex.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_rcc_ex.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_spi.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_spi.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\\stm32f4xx_hal_uart.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Drivers/STM32F4xx_HAL_Driver/Src\stm32f4xx_hal_uart.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\background.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\background.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\display.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\display.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\font.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\font.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\ili9341.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\ili9341.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\main.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\obstacle.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\player.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\player.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\stm32f4xx_hal_msp.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\stm32f4xx_it.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_it.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\syscalls.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\syscalls.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\sysmem.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\sysmem.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\system_stm32f4xx.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\system_stm32f4xx.c
+Compiling "c_src/lcd_tsc_I3G4250D_drivers/Core/Src\\text_msg.c"
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\text_msg.c
+cargo::rerun-if-changed=c_src/lcd_tsc_I3G4250D_drivers/Core/Startup/startup_stm32f429zitx.s
+cargo:rustc-link-arg=--specs=nano.specs
+cargo:rustc-link-arg=--specs=nosys.specs
+cargo:rustc-link-arg=-Wl,--gc-sections
+OUT_DIR = Some(D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out)
+OPT_LEVEL = Some(0)
+cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+TARGET = Some(thumbv7em-none-eabihf)
+DEBUG = Some(true)
+CARGO_CFG_TARGET_FEATURE = None
+HOST = Some(x86_64-pc-windows-msvc)
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+cargo:rerun-if-env-changed=TARGET_CFLAGS
+TARGET_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS_thumbv7em_none_eabihf
+CFLAGS_thumbv7em_none_eabihf = None
+cargo:rerun-if-env-changed=CFLAGS_thumbv7em-none-eabihf
+CFLAGS_thumbv7em-none-eabihf = None
+CARGO_ENCODED_RUSTFLAGS = Some(-Clink-arg=-Tc_src/lcd_tsc_I3G4250D_drivers/STM32F429ZITX_FLASH.ld-Clink-arg=-mcpu=cortex-m4-Clink-arg=-mthumb-Clink-arg=-mfpu=fpv4-sp-d16-Clink-arg=-mfloat-abi=hard)
+cargo:warning=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:217:13: warning: 'MX_USART1_UART_Init' defined but not used [-Wunused-function]
+cargo:warning=  217 | static void MX_USART1_UART_Init(void)
+cargo:warning=      |             ^~~~~~~~~~~~~~~~~~~
+cargo:warning=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\text_msg.c: In function 'game_init_mssg':
+cargo:warning=c_src/lcd_tsc_I3G4250D_drivers/Core/Src\text_msg.c:24:15: warning: unused variable 'game_start_btn' [-Wunused-variable]
+cargo:warning=   24 |   const char* game_start_btn = "Game starts in";
+cargo:warning=      |               ^~~~~~~~~~~~~~
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_cortex.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_dma.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_dma_ex.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_exti.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_flash.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_flash_ex.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_flash_ramfunc.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_gpio.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_pwr.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_pwr_ex.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_rcc.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_rcc_ex.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_spi.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\990db0f14825476b-stm32f4xx_hal_uart.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-background.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-display.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-font.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-ili9341.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-main.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-obstacle.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-player.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-stm32f4xx_hal_msp.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-stm32f4xx_it.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-syscalls.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-sysmem.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-system_stm32f4xx.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\386e191aff503589-text_msg.o
+cargo:rustc-link-arg=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\flappy_bird_ffi-9e5bbc301ce9c600\out\bf2bf38ce4e65f29-startup_stm32f429zitx.o

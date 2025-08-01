@@ -1,0 +1,6 @@
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:79:5:c_main	8	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:128:6:SystemClock_Config	88	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:175:13:MX_SPI5_Init	8	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:217:13:MX_USART1_UART_Init	8	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:250:13:MX_GPIO_Init	48	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\main.c:306:6:Error_Handler	4	static,ignoring_inline_asm
