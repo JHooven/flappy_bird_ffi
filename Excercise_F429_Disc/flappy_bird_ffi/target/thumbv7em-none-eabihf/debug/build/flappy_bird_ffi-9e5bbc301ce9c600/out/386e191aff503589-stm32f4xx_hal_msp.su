@@ -1,0 +1,5 @@
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c:63:6:HAL_MspInit	16	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c:86:6:HAL_SPI_MspInit	48	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c:124:6:HAL_SPI_MspDeInit	16	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c:154:6:HAL_UART_MspInit	48	static
+c_src/lcd_tsc_I3G4250D_drivers/Core/Src\stm32f4xx_hal_msp.c:191:6:HAL_UART_MspDeInit	16	static

@@ -1,0 +1,15 @@
+../Core/Src/ili9341.c:56:13:ili9341_write_cmd	1
+../Core/Src/ili9341.c:69:13:ili9341_write_data	1
+../Core/Src/ili9341.c:81:13:ili9341_hw_reset	1
+../Core/Src/ili9341.c:98:6:ili9341_set_address_window	1
+../Core/Src/ili9341.c:126:13:ili9341_init	1
+../Core/Src/ili9341.c:273:6:bsp_lcd_init	1
+../Core/Src/ili9341.c:290:6:ili9341_draw_pixel	3
+../Core/Src/ili9341.c:308:13:ili9341_write_char	5
+../Core/Src/ili9341.c:333:6:ili9341_write_string	5
+../Core/Src/ili9341.c:361:6:ili9341_fill_rect	6
+../Core/Src/ili9341.c:381:6:ili9341_set_orientation	2
+../Core/Src/ili9341.c:399:6:ili9341_fill_screen	1
+../Core/Src/ili9341.c:412:6:ili9341_draw_image	6
+../Core/Src/ili9341.c:432:6:ili9341_invert_colors	2
+../Core/Src/ili9341.c:441:6:ili9341_lcd_fill_image	1
