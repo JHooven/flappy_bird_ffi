@@ -1,0 +1,5 @@
+[template]
+name = "led_toggle_systick"
+exclude = [
+    "target/**",  # Exclude the entire target directory
+]

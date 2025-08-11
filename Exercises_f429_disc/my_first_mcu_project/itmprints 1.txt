@@ -1,0 +1,79 @@
+#![no_std]
+#![no_main]
+#![allow(dead_code)]
+
+//use core::cell::RefCell;
+
+//use cortex_m::peripheral;
+
+use cortex_m_rt::{entry,exception};
+
+//use cortex_m::peripheral::syst;
+use cortex_m::peripheral::syst::SystClkSource;
+
+use cortex_m::peripheral::Peripherals;
+//use cortex_m::interrupt::Mutex;
+use panic_halt as _;
+
+mod led;
+mod gpio;
+mod mcu;
+mod reg;
+mod board;
+mod itm_debug;
+
+use crate::itm_debug::{itm_init, itm_print};
+
+static mut PERIPHERALS: Option<Peripherals> = None;
+
+#[entry]
+#[allow(clippy::empty_loop)]
+
+
+fn main() -> ! {
+    led::led_init(board::BLUE_LED_PORT, board::BLUE_LED_PIN);
+    led::led_on(board::BLUE_LED_PORT, board::BLUE_LED_PIN);
+
+    let mut peripherals= Peripherals::take().unwrap();
+    
+    itm_init(&mut peripherals);
+
+    let stim0 = &mut peripherals.ITM.stim[0];
+
+    itm_print(&mut peripherals, "This is message 1");
+    
+    systick_init(&mut peripherals.SYST);
+    
+    unsafe {
+        PERIPHERALS = Some(peripherals);
+    }
+
+    loop{
+
+    }
+}
+
+fn systick_init(systick: &mut cortex_m::peripheral::SYST) {
+    systick.set_clock_source(SystClkSource::Core); 
+    systick.set_reload(4_000_000 - 1);
+    systick.clear_current();
+    systick.enable_interrupt();
+    systick.enable_counter();
+}
+
+
+
+
+#[exception]
+fn SysTick() {
+    
+   unsafe {
+    if let Some(ref mut peripherals) = PERIPHERALS {
+        itm_debug::itm_print(peripherals, "Hello from SysTick");
+    }
+}
+
+
+    led::led_toggle(board::BLUE_LED_PORT, board::BLUE_LED_PIN);
+
+}
