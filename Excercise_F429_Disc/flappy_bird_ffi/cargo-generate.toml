@@ -1,5 +1,0 @@
-[template]
-name = "flappy_bird_ffi"
-exclude = [
-    "target/**",  # Exclude the entire target directory
-]

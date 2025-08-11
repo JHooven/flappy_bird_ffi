@@ -1,5 +1,0 @@
-../Core/Src/text_msg.c:23:6:game_init_mssg	1
-../Core/Src/text_msg.c:35:6:game_over_mssg	1
-../Core/Src/text_msg.c:45:6:render_gamestart_countdown	7
-../Core/Src/text_msg.c:67:6:player_show_score	2
-../Core/Src/text_msg.c:82:6:display_final_score	2

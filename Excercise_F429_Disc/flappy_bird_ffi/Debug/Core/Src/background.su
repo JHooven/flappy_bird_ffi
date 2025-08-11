@@ -1,7 +1,0 @@
-../Core/Src/background.c:16:6:bsp_lcd_set_background	16	static
-../Core/Src/background.c:24:6:display_bush	16	static
-../Core/Src/background.c:38:6:flappy_game_set_back_ground	8	static
-../Core/Src/background.c:48:6:fill_countdown_trace	16	static
-../Core/Src/background.c:57:6:set_gameover_background	16	static
-../Core/Src/background.c:65:6:display_game_title	16	static
-../Core/Src/background.c:73:6:display_game_over	16	static

@@ -1,3 +1,0 @@
-cargo:rustc-link-search=D:\RUST\rust_emb\flappy_bird_ffi\target\thumbv7em-none-eabihf\debug\build\stm32f4-ae2457137be966da\out
-cargo:rerun-if-changed=src/stm32f429/device.x
-cargo:rerun-if-changed=build.rs

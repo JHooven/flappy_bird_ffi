@@ -1,5 +1,0 @@
-[template]
-name = "itm_prints"
-exclude = [
-    "target/**",  # Exclude the entire target directory
-]

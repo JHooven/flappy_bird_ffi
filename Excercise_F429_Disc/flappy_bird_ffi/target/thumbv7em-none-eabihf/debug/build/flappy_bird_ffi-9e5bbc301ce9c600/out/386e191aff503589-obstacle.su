@@ -1,6 +1,0 @@
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:17:10:generate_obstacle_height	16	static
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:32:10:generate_obstacle_gap	16	static
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:49:6:display_obstacle	32	static
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:124:6:move_obstacle	8	static
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:132:6:score_card_background	16	static
-c_src/lcd_tsc_I3G4250D_drivers/Core/Src\obstacle.c:143:9:get_obstacle_speed	32	static

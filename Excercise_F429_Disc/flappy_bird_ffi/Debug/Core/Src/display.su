@@ -1,9 +1,0 @@
-../Core/Src/display.c:9:6:display_register_driver	16	static
-../Core/Src/display.c:13:6:display_init	8	static
-../Core/Src/display.c:19:6:display_write_string	40	static
-../Core/Src/display.c:25:6:display_write_char	40	static
-../Core/Src/display.c:31:6:display_draw_image	32	static
-../Core/Src/display.c:37:6:display_fill_screen	16	static
-../Core/Src/display.c:43:6:display_draw_pixel	16	static
-../Core/Src/display.c:49:6:display_set_orientation	16	static
-../Core/Src/display.c:55:6:display_fill_rect	32	static

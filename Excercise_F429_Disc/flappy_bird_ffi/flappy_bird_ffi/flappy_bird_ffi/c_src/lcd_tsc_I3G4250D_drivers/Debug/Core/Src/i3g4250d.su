@@ -1,3 +1,0 @@
-../Core/Src/i3g4250d.c:9:6:I3G4250D_Init	32	static
-../Core/Src/i3g4250d.c:38:9:I3G4250D_ReadID	32	static
-../Core/Src/i3g4250d.c:57:6:I3G4250D_ReadXYZAngRate	56	static
