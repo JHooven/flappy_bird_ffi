@@ -1,0 +1,53 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug (ST-Link)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/flappy_bird_ffi",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "showDevDebugOutput": "raw",
+            "serverpath": "/opt/homebrew/bin/openocd",
+            "device": "STM32F429ZI",
+            "svdFile": "/Users/hoov/Downloads/STM32F429.svd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f4x.cfg"
+            ],
+            "serverArgs": [
+                "-c", "adapter speed 1000",
+                "-c", "transport select hla_swd"
+            ],
+            "preLaunchCommands": [
+                "monitor halt",
+          //      "monitor flash erase_sector 0 0 last",
+                "monitor reset halt"
+            ],
+            "swoConfig": {
+                "enabled": false,
+                "cpuFrequency": 8000000,
+                "swoFrequency": 1000000,
+                "source": "probe",
+                "decoders": [
+                    {
+                        "label": "ITM Port 0",
+                        "type": "console",
+                        "port": 0
+                    }
+                ]
+            },
+            "rttConfig": {
+                "enabled": true,
+                "decoders": [
+                    {
+                        "label": "RTT Channel 0",
+                        "type": "console",
+                        "port": 0
+                    }
+                ]
+            }
+        }
+    ]
+}

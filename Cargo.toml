@@ -1,0 +1,27 @@
+[package]
+name = "flappy_bird_ffi"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+# cargo-binutils = "0.4.0"
+# cortex-m-rt = "0.7.5"
+# panic-halt = "0.2"   # stops the MCU on panic
+# serde = { version = "1.0", default-features = false, features = ["derive"] }
+# postcard = "1.0"   # no_std serializer
+# is_terminal_polyfill = { version = "1.70.1", optional = true }
+# thiserror = { version = "2.0.16", optional = true }
+# anyhow = { version = "1.0.99", default-features = false}
+# embedded-alloc = "0.6.0"
+
+[target.thumbv7em-none-eabihf.dependencies]
+# Dependencies specific to the thumbv7em-none-eabihf target
+cortex-m = {version = "0.7.7"}
+#cortex-m-rt = {version = "0.6.15"}
+panic-halt = "1.0.0"
+rtt-target = "0.5.0"
+# Add other embedded-specific crates here
+# For example, a HAL library for your specific microcontroller
+#stm32f3xx-hal = { version = "0.6.1", features = ["stm32f303xc"] }
+stm32f4xx-hal = { version = "0.22.1", features = ["stm32f429"] }

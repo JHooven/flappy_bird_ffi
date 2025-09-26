@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build flappy_bird_ffi project and generate .bin",
+			"type": "shell",
+			"command": "cargo build --target thumbv7em-none-eabihf && arm-none-eabi-objcopy -O binary target/thumbv7em-none-eabihf/debug/flappy_bird_ffi target/thumbv7em-none-eabihf/debug/flappy_bird_ffi.bin",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build and generate .bin (flappy_bird_ffi)",
+			"type": "shell",
+			"command": "cargo build --target thumbv7em-none-eabihf && arm-none-eabi-objcopy -O binary target/thumbv7em-none-eabihf/debug/flappy_bird_ffi target/thumbv7em-none-eabihf/debug/flappy_bird_ffi.bin",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

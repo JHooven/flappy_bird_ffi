@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../stm32f429ZI_pac"
+		},
+		{
+			"path": "../stm32f429ZI_pactest"
+		},
+		{
+			"path": "../stm32f429ZI_display"
+		}
+	],
+	"settings": {
+		"elfinsight.armBinariesPath": "/opt/homebrew/bin/"
+	}
+}
