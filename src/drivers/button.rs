@@ -1,5 +1,5 @@
-use crate::gpio;
-use crate::exti;
+use super::gpio;
+use super::exti;
 use crate::mcu;
 use crate::proc;
 

@@ -5,10 +5,9 @@
 
 // use cortex_m::peripheral::syst::SystClkSource; // No longer needed
 //use board::*;
-use button::*;
+use drivers::*;
 use cortex_m::delay::Delay;
 use core::panic::PanicInfo;
-use led::*;
 use rtt_target::{rprintln, rtt_init_print};
 
 use crate::board::{
@@ -21,17 +20,11 @@ use crate::board::{
 // ITM debug module removed - not supported on STM32F429I-DISCO
 // mod itm_debug;
 mod board;
-mod button;
-mod gpio;
-mod i2c;
-mod led;
+mod drivers;
 mod mcu;
-mod mpu6050;
-mod mpu6050_interrupt;
 mod reg;
 mod proc;
 mod startup_stm32f429;
-mod exti;
 
 // Macro to initialize cortex-m peripherals
 macro_rules! init_cortex_m_peripherals {
@@ -51,10 +44,10 @@ fn main() {
     led_on(RED_LED_PORT, RED_LED_PIN);
 
 
-    button::button_init(
+    drivers::button::button_init(
         USER_BTN_PORT,
         USER_BTN_PIN,
-        Mode::Interrupt(Trigger::FallingEdge),
+        drivers::button::Mode::Interrupt(drivers::button::Trigger::FallingEdge),
     );
 
     let cp = init_cortex_m_peripherals!();
@@ -65,14 +58,14 @@ fn main() {
     rprintln!("RTT Debug: Starting flappy_bird_ffi on STM32F429I-DISCO");
 
     // Initialize I2C for MPU6050 communication
-    i2c::i2c_init();
+    drivers::i2c::i2c_init();
     rprintln!("RTT Debug: I2C initialized");
     
     // Small delay to let I2C settle
     cortex_m::asm::delay(1_000_000);
     
     // Initialize MPU6050 in interrupt-driven mode
-    match mpu6050_interrupt::mpu6050_init_interrupt_driven() {
+    match drivers::mpu6050_interrupt::mpu6050_init_interrupt_driven() {
         Ok(()) => {
             rprintln!("RTT Debug: MPU6050 interrupt mode initialized successfully");
             led_on(GREEN_LED_PORT, GREEN_LED_PIN);
@@ -97,12 +90,12 @@ fn main() {
         rprintln!("RTT Debug: Loop iteration {}, LED toggled", counter);
         
         // Check if MPU6050 has new data (interrupt-driven)
-        if mpu6050_interrupt::mpu6050_data_ready() {
-            match mpu6050_interrupt::mpu6050_read_all() {
+        if drivers::mpu6050_interrupt::mpu6050_data_ready() {
+            match drivers::mpu6050_interrupt::mpu6050_read_all() {
                 Ok(data) => {
                     let (ax, ay, az) = data.accel.to_g();
                     let (gx, gy, gz) = data.gyro.to_dps();
-                    let temp = mpu6050_interrupt::temperature_to_celsius(data.temperature);
+                    let temp = drivers::mpu6050_interrupt::temperature_to_celsius(data.temperature);
                     
                     rprintln!("MPU6050 INT [{}]: Accel(g): X={:.2}, Y={:.2}, Z={:.2} | Gyro(°/s): X={:.1}, Y={:.1}, Z={:.1} | Temp: {:.1}°C", 
                         counter, ax, ay, az, gx, gy, gz, temp);
@@ -112,7 +105,7 @@ fn main() {
                 }
             }
             // Clear the data ready flag
-            mpu6050_interrupt::mpu6050_clear_data_ready();
+            drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
         }
     }
 }
@@ -143,7 +136,7 @@ extern "C" fn EXTI0_Handler() {
         led_toggle(GREEN_LED_PORT, GREEN_LED_PIN);
     });
 
-    button::button_clear_interrupt(USER_BTN_PIN);
+    drivers::button::button_clear_interrupt(USER_BTN_PIN);
 }
 
 // MPU6050 interrupt handler (EXTI13 via EXTI15_10)
@@ -154,17 +147,17 @@ extern "C" fn EXTI15_10_Handler() {
         rprintln!("RTT Debug: MPU6050 data ready interrupt!"); 
         
         // Set the data ready flag
-        mpu6050_interrupt::mpu6050_set_data_ready();
+        drivers::mpu6050_interrupt::mpu6050_set_data_ready();
         
         // Clear MPU6050 interrupt (read status register)
-        match mpu6050_interrupt::mpu6050_clear_interrupt() {
+        match drivers::mpu6050_interrupt::mpu6050_clear_interrupt() {
             Ok(()) => {},
             Err(_) => rprintln!("RTT Debug: Failed to clear MPU6050 interrupt"),
         }
     });
 
     // Clear EXTI13 pending interrupt
-    if let Some(exti_line) = exti::ExtiLine::from_pin(board::MPU6050_INT_PIN) {
-        exti::clear_pending_interrupt(exti_line);
+    if let Some(exti_line) = drivers::exti::ExtiLine::from_pin(board::MPU6050_INT_PIN) {
+        drivers::exti::clear_pending_interrupt(exti_line);
     }
 }

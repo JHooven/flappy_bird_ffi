@@ -3,7 +3,7 @@
 //! This module provides basic functions to initialize and control an LED
 //! connected to a GPIO pin
 
-use crate::gpio::*;
+use super::gpio::*;
 
 /// Initializes an LED connected to the given GPIO port and pin.
 ///

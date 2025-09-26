@@ -13,6 +13,16 @@
 - Project uses register-level hardware abstraction (no HAL)
 - RTT debugging via `rtt-target` crate
 - Custom interrupt handling for button (EXTI0)
+- **Clean modular structure**: All drivers organized in `src/drivers/`
+- **Interrupt-driven MPU6050**: Efficient sensor data acquisition
+
+## Project Structure
+
+- `src/drivers/`: All hardware peripheral drivers
+- `src/main.rs`: Application logic
+- `src/board.rs`: STM32F429I-DISCO pin definitions  
+- `src/mcu.rs`: Hardware addresses and interrupt vectors
+- `src/reg.rs`: Low-level register manipulation
 
 ## MPU6050 Wiring (Interrupt-Driven)
 

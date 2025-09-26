@@ -1,5 +1,14 @@
-use crate::i2c::{i2c_read_register, i2c_write_register, I2CError};
+use super::i2c::{i2c_read_register, i2c_write_register, I2CError};
+use super::exti;
+use super::gpio;
+use crate::mcu;
+use crate::proc;
+use crate::board::{MPU6050_INT_PORT, MPU6050_INT_PIN};
 use rtt_target::rprintln;
+use core::sync::atomic::{AtomicBool, Ordering};
+
+// Global flag for data ready interrupt
+static MPU6050_DATA_READY: AtomicBool = AtomicBool::new(false);
 
 // MPU6050 I2C address (AD0 pin low)
 pub const MPU6050_ADDR: u8 = 0x68;
@@ -12,6 +21,8 @@ const MPU6050_GYRO_CONFIG: u8 = 0x1B;
 const MPU6050_ACCEL_CONFIG: u8 = 0x1C;
 const MPU6050_SMPLRT_DIV: u8 = 0x19;
 const MPU6050_CONFIG: u8 = 0x1A;
+const MPU6050_INT_ENABLE: u8 = 0x38;
+const MPU6050_INT_STATUS: u8 = 0x3A;
 
 // Data registers
 const MPU6050_ACCEL_XOUT_H: u8 = 0x3B;
@@ -65,8 +76,8 @@ impl From<I2CError> for Mpu6050Error {
     }
 }
 
-pub fn mpu6050_init() -> Result<(), Mpu6050Error> {
-    rprintln!("MPU6050: Initializing...");
+pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
+    rprintln!("MPU6050: Initializing interrupt-driven mode...");
     
     // Check WHO_AM_I register
     let who_am_i = i2c_read_register(MPU6050_ADDR, MPU6050_WHO_AM_I)?;
@@ -81,8 +92,8 @@ pub fn mpu6050_init() -> Result<(), Mpu6050Error> {
     i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00)?;
     rprintln!("MPU6050: Woke up device");
     
-    // Set sample rate divider (1kHz / (1 + 7) = 125Hz)
-    i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x07)?;
+    // Set sample rate divider (1kHz / (1 + 19) = 50Hz for interrupt mode)
+    i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13)?;
     
     // Configure accelerometer (±2g full scale)
     i2c_write_register(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x00)?;
@@ -93,7 +104,40 @@ pub fn mpu6050_init() -> Result<(), Mpu6050Error> {
     // Set low pass filter (bandwidth 94Hz)
     i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02)?;
     
-    rprintln!("MPU6050: Initialization complete");
+    // Enable data ready interrupt
+    i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01)?; // DATA_RDY_EN
+    
+    // Configure interrupt pin on MCU
+    setup_mpu6050_interrupt_pin()?;
+    
+    rprintln!("MPU6050: Interrupt-driven initialization complete");
+    Ok(())
+}
+
+fn setup_mpu6050_interrupt_pin() -> Result<(), Mpu6050Error> {
+    // Enable GPIOC clock
+    gpio::enable_gpio_clock(MPU6050_INT_PORT);
+    
+    // Configure PC13 as input
+    gpio::set_gpio_mode_input(MPU6050_INT_PORT, MPU6050_INT_PIN);
+    
+    // Configure SYSCFG for EXTI13
+    exti::gpio::configure_syscfg(MPU6050_INT_PORT, MPU6050_INT_PIN);
+    
+    // Configure for falling edge (MPU6050 INT is active high, but we'll use rising edge)
+    exti::gpio::set_edge(MPU6050_INT_PIN, exti::gpio::EdgeTrigger::Rising);
+    
+    // Enable EXTI13 interrupt
+    if let Some(exti_line) = exti::ExtiLine::from_pin(MPU6050_INT_PIN) {
+        exti::enable_interrupt(exti_line);
+        
+        // Enable NVIC for EXTI15_10 (covers EXTI13)
+        if let Some(irq_num) = mcu::IRQn::from_pin(MPU6050_INT_PIN) {
+            proc::enable_irq(irq_num);
+        }
+    }
+    
+    rprintln!("MPU6050: Interrupt pin configured on PC13");
     Ok(())
 }
 
@@ -147,6 +191,28 @@ pub fn mpu6050_read_all() -> Result<Mpu6050Data, Mpu6050Error> {
         gyro,
         temperature,
     })
+}
+
+// Check if new data is available (called from main loop)
+pub fn mpu6050_data_ready() -> bool {
+    MPU6050_DATA_READY.load(Ordering::Relaxed)
+}
+
+// Clear the data ready flag after reading
+pub fn mpu6050_clear_data_ready() {
+    MPU6050_DATA_READY.store(false, Ordering::Relaxed);
+}
+
+// Set the data ready flag (called from interrupt handler)
+pub fn mpu6050_set_data_ready() {
+    MPU6050_DATA_READY.store(true, Ordering::Relaxed);
+}
+
+// Clear MPU6050 interrupt status
+pub fn mpu6050_clear_interrupt() -> Result<(), Mpu6050Error> {
+    // Read interrupt status register to clear the interrupt
+    let _status = i2c_read_register(MPU6050_ADDR, MPU6050_INT_STATUS)?;
+    Ok(())
 }
 
 // Helper functions to convert raw values to physical units

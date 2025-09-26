@@ -4,11 +4,14 @@ This is a bare-metal embedded Rust project targeting the STM32F429I-DISCO develo
 
 ## Architecture Overview
 
-This project implements a **register-level hardware abstraction** without using HAL libraries like `stm32f4xx-hal` (which is only listed as a dependency but not actively used). The core architecture follows this layered approach:
+This project implements a **register-level hardware abstraction** without using HAL libraries like `stm32f4xx-hal` (which is only listed as a dependency but not actively used). The core architecture follows this clean modular approach:
 
 - **Hardware Layer** (`src/reg.rs`): Low-level register read/write operations using volatile pointers
 - **MCU Layer** (`src/mcu.rs`): Hardware addresses, pin definitions, and interrupt mappings 
-- **Peripheral Drivers** (`src/gpio.rs`, `src/led.rs`, `src/button.rs`, `src/exti.rs`): Hardware-specific implementations
+- **Drivers Module** (`src/drivers/`): All peripheral drivers organized in dedicated directory
+  - `gpio.rs`, `led.rs`, `button.rs`, `exti.rs`: Basic peripheral drivers
+  - `i2c.rs`: I2C communication protocol
+  - `mpu6050_interrupt.rs`: Advanced interrupt-driven sensor interface
 - **Board Configuration** (`src/board.rs`): STM32F429I-DISCO pin mappings
 - **Application** (`src/main.rs`): Main loop with RTT debugging and interrupt handling
 
@@ -23,19 +26,25 @@ reg_set_val(addr, value);               // Set entire register
 ```
 
 ### GPIO Operations
-GPIO functions in `src/gpio.rs` follow this pattern:
+GPIO functions in `src/drivers/gpio.rs` follow this pattern:
 1. Enable peripheral clock via `enable_gpio_clock(port)`
 2. Configure mode with `set_gpio_mode_output/input(port, pin)`
 3. Set additional properties (output type, etc.)
 4. Control pin state with `PinState` enum (High/Low/Toggle)
 
 ### Interrupt Configuration
-Button interrupts require coordinating multiple subsystems (`src/button.rs`):
+Button interrupts require coordinating multiple subsystems (`src/drivers/button.rs`):
 1. GPIO configuration (clock, input mode)
-2. SYSCFG mapping (`exti::gpio::configure_syscfg`)
-3. EXTI edge configuration (`exti::gpio::set_edge`)
+2. SYSCFG mapping (`drivers::exti::gpio::configure_syscfg`)
+3. EXTI edge configuration (`drivers::exti::gpio::set_edge`)
 4. NVIC enable (`proc::enable_irq`)
 5. Implement handler (e.g., `EXTI0_Handler`)
+
+### Module Organization
+All drivers are in `src/drivers/` directory:
+- Use `use drivers::*;` for common exports
+- Use `use drivers::module::specific_item;` for specific items
+- Follow established register manipulation patterns
 
 ## Build & Debug Workflow
 
@@ -82,8 +91,12 @@ This is a `no_std` environment - use `panic_handler` for unrecoverable errors. T
 
 - `src/reg.rs`: Core register manipulation - understand before modifying any hardware access
 - `src/mcu.rs`: Hardware memory map and interrupt vectors  
-- `src/exti.rs`: External interrupt controller - critical for button handling
+- `src/drivers/`: All peripheral drivers organized by functionality
+  - `gpio.rs`: GPIO configuration and control
+  - `exti.rs`: External interrupt controller - critical for button handling
+  - `i2c.rs`: I2C communication implementation
+  - `mpu6050_interrupt.rs`: Advanced interrupt-driven sensor interface
 - `src/proc.rs`: NVIC interrupt control
 - `link.x`: Memory layout and sections
 
-When adding new peripherals, follow the established pattern: create register manipulation functions in the relevant module, add constants to `mcu.rs`, and coordinate with existing interrupt/clock systems.
+When adding new peripherals, follow the established pattern: create a new driver in `src/drivers/`, add exports to `drivers/mod.rs`, add constants to `mcu.rs`, and coordinate with existing interrupt/clock systems.
