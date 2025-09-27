@@ -10,6 +10,7 @@ use drivers::*;
 use core::panic::PanicInfo;
 use rtt_target::{rprintln, rtt_init_print};
 use core::sync::atomic::{AtomicU32, AtomicI32, Ordering};
+use motion_control::{MotionControlMode, motion_init, motion_set_mode, motion_process};
 
 use crate::board::{
     GREEN_LED_PIN, GREEN_LED_PORT, RED_LED_PIN, RED_LED_PORT, USER_BTN_PIN, USER_BTN_PORT,
@@ -26,13 +27,21 @@ const INTERRUPT_SKIP_COUNT: u32 = 10; // Process every 10th interrupt
 static SENSOR_ROTATION: AtomicU32 = AtomicU32::new(0);
 
 // Sensor data storage - using AtomicI32 for thread safety (storing i16 values)
-static ACCEL_X: AtomicI32 = AtomicI32::new(0);
-static ACCEL_Y: AtomicI32 = AtomicI32::new(0);
-static ACCEL_Z: AtomicI32 = AtomicI32::new(0);
-static GYRO_X: AtomicI32 = AtomicI32::new(0);
-static GYRO_Y: AtomicI32 = AtomicI32::new(0);
-static GYRO_Z: AtomicI32 = AtomicI32::new(0);
-static TEMPERATURE: AtomicI32 = AtomicI32::new(0);
+// Made public for motion_control module access
+pub static ACCEL_X: AtomicI32 = AtomicI32::new(0);
+pub static ACCEL_Y: AtomicI32 = AtomicI32::new(0);
+pub static ACCEL_Z: AtomicI32 = AtomicI32::new(0);
+pub static GYRO_X: AtomicI32 = AtomicI32::new(0);
+pub static GYRO_Y: AtomicI32 = AtomicI32::new(0);
+pub static GYRO_Z: AtomicI32 = AtomicI32::new(0);
+pub static TEMPERATURE: AtomicI32 = AtomicI32::new(0);
+
+// Game state for motion-controlled flappy bird
+static BIRD_Y_POSITION: AtomicI32 = AtomicI32::new(0);    // Bird vertical position (-100 to +100)
+static BIRD_X_POSITION: AtomicI32 = AtomicI32::new(0);    // Bird horizontal position (-100 to +100) 
+static BIRD_VELOCITY_Y: AtomicI32 = AtomicI32::new(0);    // Vertical velocity
+static GAME_SCORE: AtomicU32 = AtomicU32::new(0);         // Game score
+static MOTION_MODE_CYCLE: AtomicU32 = AtomicU32::new(0);  // Mode cycling counter
 
 // ITM debug module removed - not supported on STM32F429I-DISCO
 // mod itm_debug;
@@ -42,6 +51,7 @@ mod mcu;
 mod reg;
 mod proc;
 mod startup_stm32f429;
+mod motion_control;
 
 // Macro to initialize cortex-m peripherals
 macro_rules! init_cortex_m_peripherals {
@@ -133,6 +143,16 @@ fn main() {
     
     rprintln!("RTT Debug: Interrupt-driven mode with throttling initialized (skip every {} interrupts)", INTERRUPT_SKIP_COUNT);
     
+    // Initialize motion control system
+    motion_init();
+    motion_set_mode(MotionControlMode::TiltControl);  // Start with tilt control
+    rprintln!("Motion Control: Started with Tilt Control mode");
+    
+    // Game physics constants
+    const GRAVITY: i32 = 2;           // Downward acceleration
+    const FLAP_STRENGTH: i32 = 15;    // Upward velocity from flap
+    const BIRD_DAMPING: i32 = 95;     // Velocity damping (95% retained each frame)
+    
     loop {
         // Faster loop since we're throttling interrupts
         cortex_m::asm::delay(900_000); // ~50ms at 180MHz - faster with interrupt throttling
@@ -149,6 +169,22 @@ fn main() {
         
         if loop_count % 20 == 0 {
             rprintln!("MAIN: Loop {}, interrupts: {} (polling mode)", loop_count, interrupt_count);
+        }
+        
+        // Motion control processing (every loop for responsive gaming)
+        let motion_state = motion_process();
+        
+        // Button press to cycle through motion control modes
+        if button_pressed() {
+            cycle_motion_mode();
+        }
+        
+        // Game physics update
+        update_bird_physics(&motion_state);
+        
+        // Display game state every 10 loops
+        if loop_count % 10 == 0 {
+            display_game_state(&motion_state);
         }
         
         // Read sensor data every 5th loop (every ~250ms) - no I2C status register polling
@@ -474,10 +510,13 @@ extern "C" fn HardFault() -> ! {
 extern "C" fn EXTI0_Handler() {
     
     cortex_m::interrupt::free(|_| {
-        rprintln!("RTT Debug: Button pressed!"); 
+        rprintln!("RTT Debug: Button pressed - Cycling motion mode!"); 
         led_toggle(RED_LED_PORT, RED_LED_PIN);
         led_toggle(GREEN_LED_PORT, GREEN_LED_PIN);
     });
+    
+    // Set button pressed flag for main loop processing
+    BUTTON_PRESSED_FLAG.store(1, Ordering::Relaxed);
 
     drivers::button::button_clear_interrupt(USER_BTN_PIN);
 }
@@ -513,4 +552,104 @@ extern "C" fn EXTI15_10_Handler() {
     
     // Don't do I2C operations in interrupt handler - do them in main loop
     // This prevents potential stack overflow and timing issues
+}
+
+/// Simple button state tracking
+static BUTTON_PRESSED_FLAG: AtomicU32 = AtomicU32::new(0);
+
+/// Check if button was pressed (and clear the flag)
+fn button_pressed() -> bool {
+    BUTTON_PRESSED_FLAG.swap(0, Ordering::Relaxed) > 0
+}
+
+/// Cycle through motion control modes
+fn cycle_motion_mode() {
+    let current_cycle = MOTION_MODE_CYCLE.fetch_add(1, Ordering::Relaxed);
+    
+    let new_mode = match current_cycle % 6 {
+        0 => MotionControlMode::Disabled,
+        1 => MotionControlMode::TiltControl,
+        2 => MotionControlMode::TapControl, 
+        3 => MotionControlMode::RotationControl,
+        4 => MotionControlMode::GestureControl,
+        5 => MotionControlMode::CalibratedTilt,
+        _ => MotionControlMode::TiltControl,
+    };
+    
+    motion_set_mode(new_mode);
+    rprintln!("Motion Control: Switched to {:?}", new_mode);
+}
+
+/// Update bird physics based on motion input
+fn update_bird_physics(motion_state: &motion_control::MotionState) {
+    // Game physics constants
+    const GRAVITY: i32 = 2;           // Downward acceleration
+    const FLAP_STRENGTH: i32 = 15;    // Upward velocity from flap
+    const BIRD_DAMPING: i32 = 95;     // Velocity damping (95% retained each frame)
+    // Get current bird state
+    let mut bird_y = BIRD_Y_POSITION.load(Ordering::Relaxed);
+    let mut bird_x = BIRD_X_POSITION.load(Ordering::Relaxed);
+    let mut velocity_y = BIRD_VELOCITY_Y.load(Ordering::Relaxed);
+    
+    // Apply flap if triggered
+    if motion_state.flap_trigger {
+        velocity_y = FLAP_STRENGTH;
+        GAME_SCORE.fetch_add(1, Ordering::Relaxed); // Score for each flap
+    }
+    
+    // Apply gravity
+    velocity_y -= GRAVITY;
+    
+    // Apply velocity damping
+    velocity_y = (velocity_y * BIRD_DAMPING) / 100;
+    
+    // Update vertical position
+    bird_y += velocity_y;
+    
+    // Apply horizontal motion input (for modes that support it)
+    bird_x += motion_state.horizontal_input / 10; // Scaled down for stability
+    
+    // Apply direct vertical input for tilt-based modes
+    if motion_state.vertical_input != 0 {
+        bird_y += motion_state.vertical_input / 5; // Scaled for responsiveness
+    }
+    
+    // Clamp bird position to valid range
+    bird_y = bird_y.max(-100).min(100);
+    bird_x = bird_x.max(-100).min(100);
+    
+    // Special action handling
+    if motion_state.special_action {
+        // Reset bird to center on special action
+        bird_y = 0;
+        bird_x = 0;
+        velocity_y = 0;
+        GAME_SCORE.fetch_add(10, Ordering::Relaxed); // Bonus points
+    }
+    
+    // Store updated bird state
+    BIRD_Y_POSITION.store(bird_y, Ordering::Relaxed);
+    BIRD_X_POSITION.store(bird_x, Ordering::Relaxed);
+    BIRD_VELOCITY_Y.store(velocity_y, Ordering::Relaxed);
+}
+
+/// Display current game state
+fn display_game_state(motion_state: &motion_control::MotionState) {
+    let bird_y = BIRD_Y_POSITION.load(Ordering::Relaxed);
+    let bird_x = BIRD_X_POSITION.load(Ordering::Relaxed);
+    let velocity_y = BIRD_VELOCITY_Y.load(Ordering::Relaxed);
+    let score = GAME_SCORE.load(Ordering::Relaxed);
+    let mode = motion_control::motion_get_mode();
+    
+    if motion_state.calibrating {
+        let progress = motion_control::motion_get_calibration_progress();
+        rprintln!("CALIBRATING {:?}: {}% complete", mode, progress);
+    } else {
+        rprintln!("GAME | Mode:{:?} Bird:({},{}) Vel:{} Score:{} Flap:{}", 
+                 mode, bird_x, bird_y, velocity_y, score, motion_state.flap_trigger);
+        
+        if motion_state.special_action {
+            rprintln!("*** SPECIAL ACTION TRIGGERED! ***");
+        }
+    }
 }
