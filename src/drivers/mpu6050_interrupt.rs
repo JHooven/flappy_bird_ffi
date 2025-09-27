@@ -4,7 +4,7 @@ use super::gpio;
 use crate::mcu;
 use crate::proc;
 use crate::board::{MPU6050_INT_PORT, MPU6050_INT_PIN};
-use rtt_target::rprintln;
+
 use core::sync::atomic::{AtomicBool, Ordering};
 
 // Global flag for data ready interrupt
@@ -77,143 +77,87 @@ impl From<I2CError> for Mpu6050Error {
 }
 
 pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
-    rprintln!("MPU6050: Initializing interrupt-driven mode...");
+    // Initialize MPU6050 in interrupt-driven mode
     
     // Check WHO_AM_I register
     let who_am_i = i2c_read_register(MPU6050_ADDR, MPU6050_WHO_AM_I)?;
-    rprintln!("MPU6050: WHO_AM_I = 0x{:02X}", who_am_i);
+
     
     if who_am_i != 0x68 {
-        rprintln!("MPU6050: Device not found or incorrect WHO_AM_I");
         return Err(Mpu6050Error::DeviceNotFound);
     }
     
     // Reset the MPU6050 first (device reset)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x80) {
-        Ok(()) => rprintln!("MPU6050: Device reset initiated"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to reset device: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x80)?;
     
     // Wait for reset to complete (recommended 100ms)
     cortex_m::asm::delay(1_600_000); // ~100ms at 16MHz
-    rprintln!("MPU6050: Reset wait completed");
     
     // Wake up the MPU6050 (clear sleep bit)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00) {
-        Ok(()) => rprintln!("MPU6050: Woke up device"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to wake up device: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00)?;
     
     // Wait for MPU6050 to stabilize after wake up (additional 50ms)
     cortex_m::asm::delay(800_000); // ~50ms at 16MHz
-    rprintln!("MPU6050: Stabilization wait completed");
     
     // Set sample rate divider (1kHz / (1 + 19) = 50Hz for interrupt mode)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13) {
-        Ok(()) => rprintln!("MPU6050: Sample rate configured to 50Hz"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to set sample rate: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13)?;
     
     // Configure accelerometer (±2g full scale)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x00) {
-        Ok(()) => rprintln!("MPU6050: Accelerometer configured (±2g)"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to configure accelerometer: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x00)?;
     
     // Configure gyroscope (±250°/s full scale)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_GYRO_CONFIG, 0x00) {
-        Ok(()) => rprintln!("MPU6050: Gyroscope configured (±250°/s)"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to configure gyroscope: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_GYRO_CONFIG, 0x00)?;
     
     // Set low pass filter (bandwidth 94Hz)
-    match i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02) {
-        Ok(()) => rprintln!("MPU6050: Low pass filter configured (94Hz)"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to configure low pass filter: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02)?;
     
-    // Configure MPU6050 interrupt behavior (INT_CFG register)
+    // Configure MPU6050 interrupt pin behavior (INT_PIN_CFG register 0x37)
     // Bit 7: INT_LEVEL=0 (active high), Bit 6: INT_OPEN=0 (push-pull), 
     // Bit 5: LATCH_INT_EN=1 (latch until cleared), Bit 4: INT_RD_CLEAR=1 (clear on status read)
-    match i2c_write_register(MPU6050_ADDR, 0x37, 0x30) {
-        Ok(()) => rprintln!("MPU6050: INT pin configured as active high, latched, clear on status read"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to configure INT pin: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    // Bit 2: FSYNC_INT_LEVEL=0, Bit 1: FSYNC_INT_EN=0, Bit 0: I2C_BYPASS_EN=0
+    i2c_write_register(MPU6050_ADDR, 0x37, 0x30)?;
+    
+    // Also try alternative configuration - some MPU6050s need different settings
+    // Let's try with LATCH disabled first to see if that helps
+    i2c_write_register(MPU6050_ADDR, 0x37, 0x10)?;  // Only INT_RD_CLEAR=1
     
     // Enable data ready interrupt
-    match i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01) {
-        Ok(()) => rprintln!("MPU6050: Data ready interrupt enabled"),
-        Err(e) => {
-            rprintln!("MPU6050: Failed to enable data ready interrupt: {:?}", e);
-            return Err(Mpu6050Error::I2CError(e));
-        }
-    }
+    i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01)?;
     
     // Configure interrupt pin on MCU
     setup_mpu6050_interrupt_pin()?;
     
-    rprintln!("MPU6050: Interrupt-driven initialization complete");
     Ok(())
 }
 
 fn setup_mpu6050_interrupt_pin() -> Result<(), Mpu6050Error> {
     // Enable GPIOC clock
     gpio::enable_gpio_clock(MPU6050_INT_PORT);
-    rprintln!("MPU6050: GPIOC clock enabled");
     
     // Configure PC13 as input with pull-down (since MPU6050 INT is active high)
     gpio::set_gpio_mode_input(MPU6050_INT_PORT, MPU6050_INT_PIN);
     gpio::set_gpio_pull_down(MPU6050_INT_PORT, MPU6050_INT_PIN);
-    rprintln!("MPU6050: PC13 configured as input with pull-down");
     
     // Configure SYSCFG for EXTI13
     exti::gpio::configure_syscfg(MPU6050_INT_PORT, MPU6050_INT_PIN);
-    rprintln!("MPU6050: SYSCFG configured for EXTI13");
     
     // Configure for rising edge (MPU6050 INT is active high)
     exti::gpio::set_edge(MPU6050_INT_PIN, exti::gpio::EdgeTrigger::Rising);
-    rprintln!("MPU6050: EXTI13 configured for rising edge");
     
     // Enable EXTI13 interrupt
     if let Some(exti_line) = exti::ExtiLine::from_pin(MPU6050_INT_PIN) {
         exti::enable_interrupt(exti_line);
-        rprintln!("MPU6050: EXTI13 interrupt enabled");
         
         // Enable NVIC for EXTI15_10 (covers EXTI13)
         if let Some(irq_num) = mcu::IRQn::from_pin(MPU6050_INT_PIN) {
             proc::enable_irq(irq_num);
-            rprintln!("MPU6050: NVIC EXTI15_10 enabled (IRQ {})", irq_num);
         } else {
-            rprintln!("MPU6050: ERROR - Could not map pin to IRQ number");
             return Err(Mpu6050Error::InitializationFailed);
         }
     } else {
-        rprintln!("MPU6050: ERROR - Could not map pin to EXTI line");
         return Err(Mpu6050Error::InitializationFailed);
     }
     
-    rprintln!("MPU6050: Interrupt pin setup complete on PC13");
     Ok(())
 }
 
@@ -263,10 +207,8 @@ pub fn mpu6050_read_all() -> Result<Mpu6050Data, Mpu6050Error> {
     mpu6050_read_all_burst()
 }
 
-// Conservative sensor read function with delays for I2C stability
+// Optimized sensor read function with I2C stability delays
 pub fn mpu6050_read_all_burst() -> Result<Mpu6050Data, Mpu6050Error> {
-    rprintln!("MPU6050: Starting conservative sensor read with delays...");
-    
     // Read accelerometer data with small delays between register pairs
     let accel_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_H)
         .map_err(|e| Mpu6050Error::I2CError(e))?;
@@ -321,10 +263,6 @@ pub fn mpu6050_read_all_burst() -> Result<Mpu6050Data, Mpu6050Error> {
     let gyro_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_L)
         .map_err(|e| Mpu6050Error::I2CError(e))?;
     
-    rprintln!("MPU6050: Raw data - Accel: X({},{}) Y({},{}) Z({},{}) Temp({},{}) Gyro: X({},{}) Y({},{}) Z({},{})", 
-        accel_x_h, accel_x_l, accel_y_h, accel_y_l, accel_z_h, accel_z_l,
-        temp_h, temp_l, gyro_x_h, gyro_x_l, gyro_y_h, gyro_y_l, gyro_z_h, gyro_z_l);
-    
     // Convert raw bytes to 16-bit signed values
     let accel = AccelData {
         x: ((accel_x_h as i16) << 8) | (accel_x_l as i16),
@@ -339,9 +277,6 @@ pub fn mpu6050_read_all_burst() -> Result<Mpu6050Data, Mpu6050Error> {
     };
     
     let temperature = ((temp_h as i16) << 8) | (temp_l as i16);
-    
-    rprintln!("MPU6050: Full read complete - Accel({},{},{}) Gyro({},{},{}) Temp={}",
-        accel.x, accel.y, accel.z, gyro.x, gyro.y, gyro.z, temperature);
     
     Ok(Mpu6050Data {
         accel,

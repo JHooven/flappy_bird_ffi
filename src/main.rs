@@ -55,11 +55,8 @@ fn main() {
     // Initialize RTT for debug output
     rtt_init_print!();
     
-    rprintln!("RTT Debug: Starting flappy_bird_ffi on STM32F429I-DISCO");
-
     // Initialize I2C for MPU6050 communication
     drivers::i2c::i2c_init();
-    rprintln!("RTT Debug: I2C initialized");
     
     // Small delay to let I2C settle
     cortex_m::asm::delay(1_000_000);
@@ -67,24 +64,11 @@ fn main() {
     // Initialize MPU6050 in interrupt-driven mode
     match drivers::mpu6050_interrupt::mpu6050_init_interrupt_driven() {
         Ok(()) => {
-            rprintln!("RTT Debug: MPU6050 interrupt mode initialized successfully");
             led_on(GREEN_LED_PORT, GREEN_LED_PIN);
-            
-            // Small delay then check if sensor is generating data
-            cortex_m::asm::delay(5_000_000); // Give sensor time to start
-            
-            // Try manual read to see if sensor is working
-            match drivers::mpu6050_interrupt::mpu6050_read_all() {
-                Ok(_data) => {
-                    rprintln!("RTT Debug: Initial sensor test successful - data available");
-                }
-                Err(e) => {
-                    rprintln!("RTT Debug: Initial sensor test failed: {:?}", e);
-                }
-            }
+            // Allow sensor time to initialize
+            cortex_m::asm::delay(5_000_000);
         }
-        Err(e) => {
-            rprintln!("RTT Debug: MPU6050 initialization failed: {:?}", e);
+        Err(_e) => {
             led_off(GREEN_LED_PORT, GREEN_LED_PIN);
         }
     }
@@ -93,94 +77,51 @@ fn main() {
     let mut delay = Delay::new(cp.SYST, 16_000_000);
     rprintln!("RTT Debug: Delay initialized");
     
-    let mut counter = 0;
-    let mut recovery_count = 0;
-    
     loop {
-        // Blink LED to show we're alive - delay for 1000ms
-        delay.delay_ms(1000u32);
+        // Short delay to avoid overwhelming the system
+        delay.delay_ms(50u32);
+        
+        // Toggle LED to show we're alive
         led_toggle(RED_LED_PORT, RED_LED_PIN);
         
-        counter += 1;
-        rprintln!("RTT Debug: Loop iteration {}, LED toggled", counter);
-        
-        // Debug: Every 10 loops, check interrupt pin state and MPU6050 status
-        if counter % 10 == 0 {
-            // Read PC13 pin state
-            let pin_state = drivers::gpio::get_gpio_pin_state(board::MPU6050_INT_PORT, board::MPU6050_INT_PIN);
-            
-            // Try to read MPU6050 INT_STATUS register
-            match drivers::i2c::i2c_read_register(0x68, 0x3A) {
-                Ok(int_status) => {
-                    rprintln!("RTT Debug: PC13={}, MPU6050_INT_STATUS=0x{:02X}", pin_state, int_status);
+        // Check MPU6050 interrupt status register directly (polling approach)
+        let mut has_new_data = false;
+        match drivers::i2c::i2c_read_register(0x68, 0x3A) {
+            Ok(int_status) => {
+                if int_status & 0x01 != 0 {  // DATA_RDY_INT bit
+                    has_new_data = true;
+                    // Clear the interrupt by reading the status (per MPU6050 datasheet)
+                    let _ = drivers::i2c::i2c_read_register(0x68, 0x3A);
                 }
-                Err(_) => {
-                    rprintln!("RTT Debug: PC13={}, Failed to read MPU6050 status", pin_state);
-                }
+            }
+            Err(_) => {
+                // I2C error - try recovery
+                drivers::i2c::i2c_bus_recovery();
             }
         }
         
-        // Check if MPU6050 has new data (interrupt-driven) 
-        // Read more frequently after recovery (every 3 loops) or normally every 10 loops
-        let read_interval = if recovery_count > 0 && (counter - recovery_count) < 10 { 3 } else { 10 };
-        
-        if counter % read_interval == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
-            rprintln!("RTT Debug: About to read MPU6050 data...");
-            
-            // Add small delay before I2C operation to avoid bus conflicts
-            cortex_m::asm::delay(10_000); // ~0.6ms delay
-            
+        // Check if MPU6050 has new data available (either via interrupt or polling)
+        if drivers::mpu6050_interrupt::mpu6050_data_ready() || has_new_data {
             match drivers::mpu6050_interrupt::mpu6050_read_all() {
                 Ok(data) => {
-                    rprintln!("RTT Debug: Data read successful, converting...");
-                    
-                    // Use critical section to prevent interrupt during data processing
+                    // Process sensor data in critical section
                     cortex_m::interrupt::free(|_| {
-                        // Use integer versions to avoid floating-point hardfaults
                         let (ax, ay, az) = data.accel.to_g(); // Returns millig (1/1000 g)
                         let (gx, gy, gz) = data.gyro.to_dps(); // Returns milli-degrees/sec
                         let temp_raw = data.temperature;
                         
-                        // Split the large rprintln into smaller ones to avoid stack issues
-                        // Display in millig and milli-degrees/sec to avoid floating point
-                        rprintln!("MPU6050 [{}] Accel(mg): X={}, Y={}, Z={}", counter, ax, ay, az);
-                        rprintln!("MPU6050 [{}] Gyro(mdps): X={}, Y={}, Z={}", counter, gx, gy, gz);
-                        rprintln!("MPU6050 [{}] Temp_raw: {}", counter, temp_raw);
+                        // Display sensor data
+                        rprintln!("Accel(mg): X={}, Y={}, Z={}", ax, ay, az);
+                        rprintln!("Gyro(mdps): X={}, Y={}, Z={}", gx, gy, gz);
+                        rprintln!("Temp: {}", temp_raw);
                     });
                 }
-                Err(e) => {
-                    rprintln!("RTT Debug: Failed to read MPU6050: {:?}", e);
-                    
-                    // If we get I2C errors, try to recover the bus
-                    match e {
-                        drivers::mpu6050_interrupt::Mpu6050Error::I2CError(drivers::i2c::I2CError::AddressNack) |
-                        drivers::mpu6050_interrupt::Mpu6050Error::I2CError(drivers::i2c::I2CError::DataNack) => {
-                            rprintln!("RTT Debug: I2C error detected, attempting bus recovery...");
-                            drivers::i2c::i2c_bus_recovery();
-                            recovery_count = counter; // Mark when recovery happened
-                            
-                            // Wait after recovery and test with a simple WHO_AM_I read
-                            cortex_m::asm::delay(100_000); // Longer delay after recovery
-                            
-                            match drivers::i2c::i2c_read_register(0x68, 0x75) {
-                                Ok(who_am_i) => {
-                                    rprintln!("RTT Debug: I2C recovery test successful, WHO_AM_I = 0x{:02X}", who_am_i);
-                                    rprintln!("RTT Debug: Will attempt sensor reads every 3 loops for the next 10 loops");
-                                }
-                                Err(recovery_err) => {
-                                    rprintln!("RTT Debug: I2C recovery test failed: {:?}", recovery_err);
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
+                Err(_e) => {
+                    // Simple I2C bus recovery on error
+                    drivers::i2c::i2c_bus_recovery();
                 }
             }
             // Clear the data ready flag
-            drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
-            rprintln!("RTT Debug: MPU6050 processing complete");
-        } else if drivers::mpu6050_interrupt::mpu6050_data_ready() {
-            // If we're not reading this loop, still clear the flag to prevent overflow
             drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
         }
     }
