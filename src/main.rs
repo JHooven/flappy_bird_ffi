@@ -120,17 +120,26 @@ fn main() {
         
         // Check if MPU6050 has new data (interrupt-driven) - but only every few loops to avoid I2C overload
         if counter % 5 == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
+            rprintln!("RTT Debug: About to read MPU6050 data...");
+            
             // Add small delay before I2C operation to avoid bus conflicts
             cortex_m::asm::delay(10_000); // ~0.6ms delay
             
             match drivers::mpu6050_interrupt::mpu6050_read_all() {
                 Ok(data) => {
-                    let (ax, ay, az) = data.accel.to_g();
-                    let (gx, gy, gz) = data.gyro.to_dps();
-                    let temp = drivers::mpu6050_interrupt::temperature_to_celsius(data.temperature);
+                    rprintln!("RTT Debug: Data read successful, converting...");
                     
-                    rprintln!("MPU6050 INT [{}]: Accel(g): X={:.2}, Y={:.2}, Z={:.2} | Gyro(°/s): X={:.1}, Y={:.1}, Z={:.1} | Temp: {:.1}°C", 
-                        counter, ax, ay, az, gx, gy, gz, temp);
+                    // Use critical section to prevent interrupt during data processing
+                    cortex_m::interrupt::free(|_| {
+                        let (ax, ay, az) = data.accel.to_g();
+                        let (gx, gy, gz) = data.gyro.to_dps();
+                        let temp = drivers::mpu6050_interrupt::temperature_to_celsius(data.temperature);
+                        
+                        // Split the large rprintln into smaller ones to avoid stack issues
+                        rprintln!("MPU6050 [{}] Accel: X={:.2}, Y={:.2}, Z={:.2}", counter, ax, ay, az);
+                        rprintln!("MPU6050 [{}] Gyro: X={:.1}, Y={:.1}, Z={:.1}", counter, gx, gy, gz);
+                        rprintln!("MPU6050 [{}] Temp: {:.1}°C", counter, temp);
+                    });
                 }
                 Err(e) => {
                     rprintln!("RTT Debug: Failed to read MPU6050: {:?}", e);
@@ -138,6 +147,7 @@ fn main() {
             }
             // Clear the data ready flag
             drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
+            rprintln!("RTT Debug: MPU6050 processing complete");
         } else if drivers::mpu6050_interrupt::mpu6050_data_ready() {
             // If we're not reading this loop, still clear the flag to prevent overflow
             drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
@@ -146,9 +156,35 @@ fn main() {
 }
 
 #[panic_handler]
-fn panic_handler(_info: &PanicInfo) -> ! {
-    loop {
+fn panic_handler(info: &PanicInfo) -> ! {
+    cortex_m::interrupt::free(|_| {
+        if let Some(location) = info.location() {
+            rprintln!("PANIC at {}:{} - {}", location.file(), location.line(), info.message());
+        } else {
+            rprintln!("PANIC occurred but no location info available");
+        }
+    });
     
+    loop {
+        // Flash red LED to indicate panic
+        led_toggle(RED_LED_PORT, RED_LED_PIN);
+        cortex_m::asm::delay(1_000_000);
+    }
+}
+
+// Add a custom hardfault handler for better debugging
+#[allow(non_snake_case)]
+#[unsafe(no_mangle)]
+extern "C" fn HardFault() -> ! {
+    cortex_m::interrupt::free(|_| {
+        rprintln!("HARDFAULT occurred! Check for stack overflow or invalid memory access.");
+    });
+    
+    loop {
+        // Flash both LEDs to indicate hardfault
+        led_toggle(RED_LED_PORT, RED_LED_PIN);
+        led_toggle(GREEN_LED_PORT, GREEN_LED_PIN);
+        cortex_m::asm::delay(500_000);
     }
 }
 
@@ -178,21 +214,15 @@ extern "C" fn EXTI0_Handler() {
 #[allow(non_snake_case)]
 #[unsafe(no_mangle)]
 extern "C" fn EXTI15_10_Handler() {
-    cortex_m::interrupt::free(|_| {
-        rprintln!("RTT Debug: MPU6050 data ready interrupt!"); 
-        
-        // Set the data ready flag
-        drivers::mpu6050_interrupt::mpu6050_set_data_ready();
-        
-        // Clear MPU6050 interrupt (read status register)
-        match drivers::mpu6050_interrupt::mpu6050_clear_interrupt() {
-            Ok(()) => {},
-            Err(_) => rprintln!("RTT Debug: Failed to clear MPU6050 interrupt"),
-        }
-    });
-
-    // Clear EXTI13 pending interrupt
+    // Simplified interrupt handler to avoid potential issues
+    // Set the data ready flag (atomic operation, should be safe)
+    drivers::mpu6050_interrupt::mpu6050_set_data_ready();
+    
+    // Clear EXTI13 pending interrupt first
     if let Some(exti_line) = drivers::exti::ExtiLine::from_pin(board::MPU6050_INT_PIN) {
         drivers::exti::clear_pending_interrupt(exti_line);
     }
+    
+    // Don't do I2C operations in interrupt handler - do them in main loop
+    // This prevents potential stack overflow and timing issues
 }
