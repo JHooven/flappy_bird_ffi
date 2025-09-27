@@ -88,31 +88,87 @@ pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
         return Err(Mpu6050Error::DeviceNotFound);
     }
     
+    // Reset the MPU6050 first (device reset)
+    match i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x80) {
+        Ok(()) => rprintln!("MPU6050: Device reset initiated"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to reset device: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
+    
+    // Wait for reset to complete (recommended 100ms)
+    cortex_m::asm::delay(1_600_000); // ~100ms at 16MHz
+    rprintln!("MPU6050: Reset wait completed");
+    
     // Wake up the MPU6050 (clear sleep bit)
-    i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00)?;
-    rprintln!("MPU6050: Woke up device");
+    match i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00) {
+        Ok(()) => rprintln!("MPU6050: Woke up device"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to wake up device: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
+    
+    // Wait for MPU6050 to stabilize after wake up (additional 50ms)
+    cortex_m::asm::delay(800_000); // ~50ms at 16MHz
+    rprintln!("MPU6050: Stabilization wait completed");
     
     // Set sample rate divider (1kHz / (1 + 19) = 50Hz for interrupt mode)
-    i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13)?;
+    match i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13) {
+        Ok(()) => rprintln!("MPU6050: Sample rate configured to 50Hz"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to set sample rate: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Configure accelerometer (±2g full scale)
-    i2c_write_register(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x00)?;
+    match i2c_write_register(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x00) {
+        Ok(()) => rprintln!("MPU6050: Accelerometer configured (±2g)"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to configure accelerometer: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Configure gyroscope (±250°/s full scale)
-    i2c_write_register(MPU6050_ADDR, MPU6050_GYRO_CONFIG, 0x00)?;
+    match i2c_write_register(MPU6050_ADDR, MPU6050_GYRO_CONFIG, 0x00) {
+        Ok(()) => rprintln!("MPU6050: Gyroscope configured (±250°/s)"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to configure gyroscope: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Set low pass filter (bandwidth 94Hz)
-    i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02)?;
+    match i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02) {
+        Ok(()) => rprintln!("MPU6050: Low pass filter configured (94Hz)"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to configure low pass filter: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Configure MPU6050 interrupt behavior (INT_CFG register)
     // Bit 7: INT_LEVEL=0 (active high), Bit 6: INT_OPEN=0 (push-pull), 
     // Bit 5: LATCH_INT_EN=0 (50us pulse), Bit 4: INT_RD_CLEAR=1 (clear on any read)
-    i2c_write_register(MPU6050_ADDR, 0x37, 0x10)?; // INT_PIN_CFG
-    rprintln!("MPU6050: INT pin configured as active high, push-pull, clear on read");
+    match i2c_write_register(MPU6050_ADDR, 0x37, 0x10) {
+        Ok(()) => rprintln!("MPU6050: INT pin configured as active high, push-pull, clear on read"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to configure INT pin: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Enable data ready interrupt
-    i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01)?; // DATA_RDY_EN
-    rprintln!("MPU6050: Data ready interrupt enabled");
+    match i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01) {
+        Ok(()) => rprintln!("MPU6050: Data ready interrupt enabled"),
+        Err(e) => {
+            rprintln!("MPU6050: Failed to enable data ready interrupt: {:?}", e);
+            return Err(Mpu6050Error::I2CError(e));
+        }
+    }
     
     // Configure interrupt pin on MCU
     setup_mpu6050_interrupt_pin()?;
