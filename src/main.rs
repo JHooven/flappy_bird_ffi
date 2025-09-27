@@ -94,6 +94,9 @@ fn main() {
     rprintln!("RTT Debug: Delay initialized");
     
     let mut counter = 0;
+    let mut recovery_count = 0;
+    let mut last_successful_read = 0;
+    
     loop {
         // Blink LED to show we're alive - delay for 1000ms
         delay.delay_ms(1000u32);
@@ -118,8 +121,11 @@ fn main() {
             }
         }
         
-        // Check if MPU6050 has new data (interrupt-driven) - but only every 10 loops to reduce I2C load
-        if counter % 10 == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
+        // Check if MPU6050 has new data (interrupt-driven) 
+        // Read more frequently after recovery (every 3 loops) or normally every 10 loops
+        let read_interval = if recovery_count > 0 && (counter - recovery_count) < 10 { 3 } else { 10 };
+        
+        if counter % read_interval == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
             rprintln!("RTT Debug: About to read MPU6050 data...");
             
             // Add small delay before I2C operation to avoid bus conflicts
@@ -142,6 +148,9 @@ fn main() {
                         rprintln!("MPU6050 [{}] Gyro(mdps): X={}, Y={}, Z={}", counter, gx, gy, gz);
                         rprintln!("MPU6050 [{}] Temp_raw: {}", counter, temp_raw);
                     });
+                    
+                    // Update successful read tracking
+                    last_successful_read = counter;
                 }
                 Err(e) => {
                     rprintln!("RTT Debug: Failed to read MPU6050: {:?}", e);
@@ -152,9 +161,20 @@ fn main() {
                         drivers::mpu6050_interrupt::Mpu6050Error::I2CError(drivers::i2c::I2CError::DataNack) => {
                             rprintln!("RTT Debug: I2C error detected, attempting bus recovery...");
                             drivers::i2c::i2c_bus_recovery();
+                            recovery_count = counter; // Mark when recovery happened
                             
-                            // Try reading again after recovery
-                            cortex_m::asm::delay(50_000); // Small delay after recovery
+                            // Wait after recovery and test with a simple WHO_AM_I read
+                            cortex_m::asm::delay(100_000); // Longer delay after recovery
+                            
+                            match drivers::i2c::i2c_read_register(0x68, 0x75) {
+                                Ok(who_am_i) => {
+                                    rprintln!("RTT Debug: I2C recovery test successful, WHO_AM_I = 0x{:02X}", who_am_i);
+                                    rprintln!("RTT Debug: Will attempt sensor reads every 3 loops for the next 10 loops");
+                                }
+                                Err(recovery_err) => {
+                                    rprintln!("RTT Debug: I2C recovery test failed: {:?}", recovery_err);
+                                }
+                            }
                         }
                         _ => {}
                     }
