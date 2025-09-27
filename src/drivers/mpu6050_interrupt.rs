@@ -91,13 +91,13 @@ pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
     i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x80)?;
     
     // Wait for reset to complete (recommended 100ms)
-    cortex_m::asm::delay(1_600_000); // ~100ms at 16MHz
+    cortex_m::asm::delay(18_000_000); // ~100ms at 180MHz
     
     // Wake up the MPU6050 (clear sleep bit)
     i2c_write_register(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x00)?;
     
     // Wait for MPU6050 to stabilize after wake up (additional 50ms)
-    cortex_m::asm::delay(800_000); // ~50ms at 16MHz
+    cortex_m::asm::delay(9_000_000); // ~50ms at 180MHz
     
     // Set sample rate divider (1kHz / (1 + 19) = 50Hz for interrupt mode)
     i2c_write_register(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x13)?;
@@ -207,61 +207,45 @@ pub fn mpu6050_read_all() -> Result<Mpu6050Data, Mpu6050Error> {
     mpu6050_read_all_burst()
 }
 
-// Optimized sensor read function with I2C stability delays
+// Conservative sensor read function - original working delays for I2C stability
 pub fn mpu6050_read_all_burst() -> Result<Mpu6050Data, Mpu6050Error> {
-    // Read accelerometer data with small delays between register pairs
-    let accel_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let accel_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    // Read all accelerometer data with conservative delays
+    let accel_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_H)?;
+    let accel_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_L)?;
     
-    // Small delay after reading X axis
+    // Conservative delay between axis pairs (1000 NOPs = ~5.6μs)
     for _ in 0..1000 { cortex_m::asm::nop(); }
     
-    let accel_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let accel_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let accel_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_H)?;
+    let accel_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_L)?;
     
-    // Small delay after reading Y axis
     for _ in 0..1000 { cortex_m::asm::nop(); }
     
-    let accel_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let accel_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let accel_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_H)?;
+    let accel_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_L)?;
     
-    // Longer delay before reading temperature (different register block)
+    // Longer delay between sensor blocks (2000 NOPs = ~11μs)
     for _ in 0..2000 { cortex_m::asm::nop(); }
     
     // Read temperature data
-    let temp_h = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let temp_l = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let temp_h = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_H)?;
+    let temp_l = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_L)?;
     
-    // Longer delay before reading gyroscope (different register block)
     for _ in 0..2000 { cortex_m::asm::nop(); }
     
-    // Read gyroscope data with delays between axes
-    let gyro_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let gyro_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    // Read all gyroscope data
+    let gyro_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_H)?;
+    let gyro_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_L)?;
     
     for _ in 0..1000 { cortex_m::asm::nop(); }
     
-    let gyro_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let gyro_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let gyro_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_H)?;
+    let gyro_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_L)?;
     
     for _ in 0..1000 { cortex_m::asm::nop(); }
     
-    let gyro_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_H)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
-    let gyro_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_L)
-        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let gyro_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_H)?;
+    let gyro_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_L)?;
     
     // Convert raw bytes to 16-bit signed values
     let accel = AccelData {
