@@ -85,6 +85,31 @@ fn reset_i2c1() {
     reg_set_bit(rcc_apb1rstr_addr, 21, false); // Release reset
 }
 
+// Public function to recover I2C bus when it gets stuck
+pub fn i2c_bus_recovery() {
+    use rtt_target::rprintln;
+    
+    rprintln!("I2C: Attempting bus recovery...");
+    
+    // Disable I2C peripheral
+    let i2c_cr1_addr = (I2C1_BASE + I2C_CR1_OFFSET) as *mut u32;
+    reg_set_bit(i2c_cr1_addr, I2C_CR1_PE, false);
+    
+    // Wait a bit
+    cortex_m::asm::delay(160_000); // ~10ms
+    
+    // Reset I2C peripheral
+    reset_i2c1();
+    
+    // Wait more
+    cortex_m::asm::delay(160_000); // ~10ms
+    
+    // Reconfigure I2C
+    configure_i2c1();
+    
+    rprintln!("I2C: Bus recovery complete");
+}
+
 fn configure_i2c1() {
     let i2c_cr1_addr = (I2C1_BASE + I2C_CR1_OFFSET) as *mut u32;
     let i2c_cr2_addr = (I2C1_BASE + I2C_CR2_OFFSET) as *mut u32;

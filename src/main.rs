@@ -118,8 +118,8 @@ fn main() {
             }
         }
         
-        // Check if MPU6050 has new data (interrupt-driven) - but only every few loops to avoid I2C overload
-        if counter % 5 == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
+        // Check if MPU6050 has new data (interrupt-driven) - but only every 10 loops to reduce I2C load
+        if counter % 10 == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
             rprintln!("RTT Debug: About to read MPU6050 data...");
             
             // Add small delay before I2C operation to avoid bus conflicts
@@ -145,6 +145,19 @@ fn main() {
                 }
                 Err(e) => {
                     rprintln!("RTT Debug: Failed to read MPU6050: {:?}", e);
+                    
+                    // If we get I2C errors, try to recover the bus
+                    match e {
+                        drivers::mpu6050_interrupt::Mpu6050Error::I2CError(drivers::i2c::I2CError::AddressNack) |
+                        drivers::mpu6050_interrupt::Mpu6050Error::I2CError(drivers::i2c::I2CError::DataNack) => {
+                            rprintln!("RTT Debug: I2C error detected, attempting bus recovery...");
+                            drivers::i2c::i2c_bus_recovery();
+                            
+                            // Try reading again after recovery
+                            cortex_m::asm::delay(50_000); // Small delay after recovery
+                        }
+                        _ => {}
+                    }
                 }
             }
             // Clear the data ready flag
