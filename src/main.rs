@@ -118,8 +118,11 @@ fn main() {
             }
         }
         
-        // Check if MPU6050 has new data (interrupt-driven)
-        if drivers::mpu6050_interrupt::mpu6050_data_ready() {
+        // Check if MPU6050 has new data (interrupt-driven) - but only every few loops to avoid I2C overload
+        if counter % 5 == 0 && drivers::mpu6050_interrupt::mpu6050_data_ready() {
+            // Add small delay before I2C operation to avoid bus conflicts
+            cortex_m::asm::delay(10_000); // ~0.6ms delay
+            
             match drivers::mpu6050_interrupt::mpu6050_read_all() {
                 Ok(data) => {
                     let (ax, ay, az) = data.accel.to_g();
@@ -134,6 +137,9 @@ fn main() {
                 }
             }
             // Clear the data ready flag
+            drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
+        } else if drivers::mpu6050_interrupt::mpu6050_data_ready() {
+            // If we're not reading this loop, still clear the flag to prevent overflow
             drivers::mpu6050_interrupt::mpu6050_clear_data_ready();
         }
     }

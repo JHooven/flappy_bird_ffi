@@ -152,9 +152,9 @@ pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
     
     // Configure MPU6050 interrupt behavior (INT_CFG register)
     // Bit 7: INT_LEVEL=0 (active high), Bit 6: INT_OPEN=0 (push-pull), 
-    // Bit 5: LATCH_INT_EN=0 (50us pulse), Bit 4: INT_RD_CLEAR=1 (clear on any read)
-    match i2c_write_register(MPU6050_ADDR, 0x37, 0x10) {
-        Ok(()) => rprintln!("MPU6050: INT pin configured as active high, push-pull, clear on read"),
+    // Bit 5: LATCH_INT_EN=1 (latch until cleared), Bit 4: INT_RD_CLEAR=1 (clear on status read)
+    match i2c_write_register(MPU6050_ADDR, 0x37, 0x30) {
+        Ok(()) => rprintln!("MPU6050: INT pin configured as active high, latched, clear on status read"),
         Err(e) => {
             rprintln!("MPU6050: Failed to configure INT pin: {:?}", e);
             return Err(Mpu6050Error::I2CError(e));
