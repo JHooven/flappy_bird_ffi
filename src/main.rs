@@ -69,6 +69,19 @@ fn main() {
         Ok(()) => {
             rprintln!("RTT Debug: MPU6050 interrupt mode initialized successfully");
             led_on(GREEN_LED_PORT, GREEN_LED_PIN);
+            
+            // Small delay then check if sensor is generating data
+            cortex_m::asm::delay(5_000_000); // Give sensor time to start
+            
+            // Try manual read to see if sensor is working
+            match drivers::mpu6050_interrupt::mpu6050_read_all() {
+                Ok(_data) => {
+                    rprintln!("RTT Debug: Initial sensor test successful - data available");
+                }
+                Err(e) => {
+                    rprintln!("RTT Debug: Initial sensor test failed: {:?}", e);
+                }
+            }
         }
         Err(e) => {
             rprintln!("RTT Debug: MPU6050 initialization failed: {:?}", e);
@@ -88,6 +101,22 @@ fn main() {
         
         counter += 1;
         rprintln!("RTT Debug: Loop iteration {}, LED toggled", counter);
+        
+        // Debug: Every 10 loops, check interrupt pin state and MPU6050 status
+        if counter % 10 == 0 {
+            // Read PC13 pin state
+            let pin_state = drivers::gpio::get_gpio_pin_state(board::MPU6050_INT_PORT, board::MPU6050_INT_PIN);
+            
+            // Try to read MPU6050 INT_STATUS register
+            match drivers::i2c::i2c_read_register(0x68, 0x3A) {
+                Ok(int_status) => {
+                    rprintln!("RTT Debug: PC13={}, MPU6050_INT_STATUS=0x{:02X}", pin_state, int_status);
+                }
+                Err(_) => {
+                    rprintln!("RTT Debug: PC13={}, Failed to read MPU6050 status", pin_state);
+                }
+            }
+        }
         
         // Check if MPU6050 has new data (interrupt-driven)
         if drivers::mpu6050_interrupt::mpu6050_data_ready() {

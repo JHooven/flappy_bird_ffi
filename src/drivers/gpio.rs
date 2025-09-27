@@ -138,6 +138,22 @@ pub fn set_gpio_pull_up(port: u32, pin: u32) {
     reg_set_bits(gpio_pupdr_addr, pupdr_value, bit_position, 2);
 }
 
+pub fn set_gpio_pull_down(port: u32, pin: u32) {
+    let gpio_pupdr_addr = (port + 0x0C) as *mut u32;
+    let bit_position = pin * 2;
+    let pupdr_value = 0x2; // 10 = Pull-down
+    
+    reg_set_bits(gpio_pupdr_addr, pupdr_value, bit_position, 2);
+}
+
+pub fn set_gpio_no_pull(port: u32, pin: u32) {
+    let gpio_pupdr_addr = (port + 0x0C) as *mut u32;
+    let bit_position = pin * 2;
+    let pupdr_value = 0x0; // 00 = No pull-up, no pull-down
+    
+    reg_set_bits(gpio_pupdr_addr, pupdr_value, bit_position, 2);
+}
+
 pub fn set_gpio_speed_high(port: u32, pin: u32) {
     let gpio_ospeedr_addr = (port + 0x08) as *mut u32;
     let bit_position = pin * 2;

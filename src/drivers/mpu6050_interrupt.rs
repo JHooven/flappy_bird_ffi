@@ -104,8 +104,15 @@ pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
     // Set low pass filter (bandwidth 94Hz)
     i2c_write_register(MPU6050_ADDR, MPU6050_CONFIG, 0x02)?;
     
+    // Configure MPU6050 interrupt behavior (INT_CFG register)
+    // Bit 7: INT_LEVEL=0 (active high), Bit 6: INT_OPEN=0 (push-pull), 
+    // Bit 5: LATCH_INT_EN=0 (50us pulse), Bit 4: INT_RD_CLEAR=1 (clear on any read)
+    i2c_write_register(MPU6050_ADDR, 0x37, 0x10)?; // INT_PIN_CFG
+    rprintln!("MPU6050: INT pin configured as active high, push-pull, clear on read");
+    
     // Enable data ready interrupt
     i2c_write_register(MPU6050_ADDR, MPU6050_INT_ENABLE, 0x01)?; // DATA_RDY_EN
+    rprintln!("MPU6050: Data ready interrupt enabled");
     
     // Configure interrupt pin on MCU
     setup_mpu6050_interrupt_pin()?;
@@ -117,27 +124,40 @@ pub fn mpu6050_init_interrupt_driven() -> Result<(), Mpu6050Error> {
 fn setup_mpu6050_interrupt_pin() -> Result<(), Mpu6050Error> {
     // Enable GPIOC clock
     gpio::enable_gpio_clock(MPU6050_INT_PORT);
+    rprintln!("MPU6050: GPIOC clock enabled");
     
-    // Configure PC13 as input
+    // Configure PC13 as input with pull-down (since MPU6050 INT is active high)
     gpio::set_gpio_mode_input(MPU6050_INT_PORT, MPU6050_INT_PIN);
+    gpio::set_gpio_pull_down(MPU6050_INT_PORT, MPU6050_INT_PIN);
+    rprintln!("MPU6050: PC13 configured as input with pull-down");
     
     // Configure SYSCFG for EXTI13
     exti::gpio::configure_syscfg(MPU6050_INT_PORT, MPU6050_INT_PIN);
+    rprintln!("MPU6050: SYSCFG configured for EXTI13");
     
-    // Configure for falling edge (MPU6050 INT is active high, but we'll use rising edge)
+    // Configure for rising edge (MPU6050 INT is active high)
     exti::gpio::set_edge(MPU6050_INT_PIN, exti::gpio::EdgeTrigger::Rising);
+    rprintln!("MPU6050: EXTI13 configured for rising edge");
     
     // Enable EXTI13 interrupt
     if let Some(exti_line) = exti::ExtiLine::from_pin(MPU6050_INT_PIN) {
         exti::enable_interrupt(exti_line);
+        rprintln!("MPU6050: EXTI13 interrupt enabled");
         
         // Enable NVIC for EXTI15_10 (covers EXTI13)
         if let Some(irq_num) = mcu::IRQn::from_pin(MPU6050_INT_PIN) {
             proc::enable_irq(irq_num);
+            rprintln!("MPU6050: NVIC EXTI15_10 enabled (IRQ {})", irq_num);
+        } else {
+            rprintln!("MPU6050: ERROR - Could not map pin to IRQ number");
+            return Err(Mpu6050Error::InitializationFailed);
         }
+    } else {
+        rprintln!("MPU6050: ERROR - Could not map pin to EXTI line");
+        return Err(Mpu6050Error::InitializationFailed);
     }
     
-    rprintln!("MPU6050: Interrupt pin configured on PC13");
+    rprintln!("MPU6050: Interrupt pin setup complete on PC13");
     Ok(())
 }
 
