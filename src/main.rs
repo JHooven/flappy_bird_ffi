@@ -6,7 +6,7 @@
 // use cortex_m::peripheral::syst::SystClkSource; // No longer needed
 //use board::*;
 use drivers::*;
-use cortex_m::delay::Delay;
+// use cortex_m::delay::Delay; // Not needed in LUDICROUS SPEED MODE!
 use core::panic::PanicInfo;
 use rtt_target::{rprintln, rtt_init_print};
 
@@ -50,7 +50,7 @@ fn main() {
         drivers::button::Mode::Interrupt(drivers::button::Trigger::FallingEdge),
     );
 
-    let cp = init_cortex_m_peripherals!();
+    let _cp = init_cortex_m_peripherals!(); // Still needed for some initialization
 
     // Initialize RTT for debug output
     rtt_init_print!();
@@ -73,16 +73,21 @@ fn main() {
         }
     }
 
-    // Create a delay instance - assuming 16MHz system clock
-    let mut delay = Delay::new(cp.SYST, 16_000_000);
-    rprintln!("RTT Debug: Delay initialized");
+    // 🚀 LUDICROUS SPEED MODE - No delay needed!
+    rprintln!("RTT Debug: Maximum speed mode initialized");
     
     loop {
-        // Short delay to avoid overwhelming the system
-        delay.delay_ms(50u32);
+        // 🚀 LUDICROUS SPEED MODE - NO DELAY!
+        // Running at maximum CPU speed limited only by I2C and RTT bandwidth
         
-        // Toggle LED to show we're alive
-        led_toggle(RED_LED_PORT, RED_LED_PIN);
+        // Toggle LED very infrequently at maximum speed
+        static mut LED_COUNTER: u32 = 0;
+        unsafe {
+            LED_COUNTER += 1;
+            if LED_COUNTER % 10000 == 0 {  // Toggle every ~10k loops 
+                led_toggle(RED_LED_PORT, RED_LED_PIN);
+            }
+        }
         
         // Check MPU6050 interrupt status register directly (polling approach)
         let mut has_new_data = false;
