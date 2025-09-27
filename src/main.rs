@@ -95,7 +95,6 @@ fn main() {
     
     let mut counter = 0;
     let mut recovery_count = 0;
-    let mut last_successful_read = 0;
     
     loop {
         // Blink LED to show we're alive - delay for 1000ms
@@ -148,9 +147,6 @@ fn main() {
                         rprintln!("MPU6050 [{}] Gyro(mdps): X={}, Y={}, Z={}", counter, gx, gy, gz);
                         rprintln!("MPU6050 [{}] Temp_raw: {}", counter, temp_raw);
                     });
-                    
-                    // Update successful read tracking
-                    last_successful_read = counter;
                 }
                 Err(e) => {
                     rprintln!("RTT Debug: Failed to read MPU6050: {:?}", e);

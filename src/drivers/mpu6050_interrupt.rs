@@ -258,9 +258,90 @@ pub fn mpu6050_read_temperature() -> Result<i16, Mpu6050Error> {
 }
 
 pub fn mpu6050_read_all() -> Result<Mpu6050Data, Mpu6050Error> {
-    let accel = mpu6050_read_accel()?;
-    let gyro = mpu6050_read_gyro()?;
-    let temperature = mpu6050_read_temperature()?;
+    // Use burst read to get all sensor data in one I2C transaction
+    // This is safer than multiple individual reads
+    mpu6050_read_all_burst()
+}
+
+// Conservative sensor read function with delays for I2C stability
+pub fn mpu6050_read_all_burst() -> Result<Mpu6050Data, Mpu6050Error> {
+    rprintln!("MPU6050: Starting conservative sensor read with delays...");
+    
+    // Read accelerometer data with small delays between register pairs
+    let accel_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let accel_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_XOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    // Small delay after reading X axis
+    for _ in 0..1000 { cortex_m::asm::nop(); }
+    
+    let accel_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let accel_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_YOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    // Small delay after reading Y axis
+    for _ in 0..1000 { cortex_m::asm::nop(); }
+    
+    let accel_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let accel_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_ACCEL_ZOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    // Longer delay before reading temperature (different register block)
+    for _ in 0..2000 { cortex_m::asm::nop(); }
+    
+    // Read temperature data
+    let temp_h = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let temp_l = i2c_read_register(MPU6050_ADDR, MPU6050_TEMP_OUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    // Longer delay before reading gyroscope (different register block)
+    for _ in 0..2000 { cortex_m::asm::nop(); }
+    
+    // Read gyroscope data with delays between axes
+    let gyro_x_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let gyro_x_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_XOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    for _ in 0..1000 { cortex_m::asm::nop(); }
+    
+    let gyro_y_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let gyro_y_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_YOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    for _ in 0..1000 { cortex_m::asm::nop(); }
+    
+    let gyro_z_h = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_H)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    let gyro_z_l = i2c_read_register(MPU6050_ADDR, MPU6050_GYRO_ZOUT_L)
+        .map_err(|e| Mpu6050Error::I2CError(e))?;
+    
+    rprintln!("MPU6050: Raw data - Accel: X({},{}) Y({},{}) Z({},{}) Temp({},{}) Gyro: X({},{}) Y({},{}) Z({},{})", 
+        accel_x_h, accel_x_l, accel_y_h, accel_y_l, accel_z_h, accel_z_l,
+        temp_h, temp_l, gyro_x_h, gyro_x_l, gyro_y_h, gyro_y_l, gyro_z_h, gyro_z_l);
+    
+    // Convert raw bytes to 16-bit signed values
+    let accel = AccelData {
+        x: ((accel_x_h as i16) << 8) | (accel_x_l as i16),
+        y: ((accel_y_h as i16) << 8) | (accel_y_l as i16),
+        z: ((accel_z_h as i16) << 8) | (accel_z_l as i16),
+    };
+    
+    let gyro = GyroData {
+        x: ((gyro_x_h as i16) << 8) | (gyro_x_l as i16),
+        y: ((gyro_y_h as i16) << 8) | (gyro_y_l as i16),
+        z: ((gyro_z_h as i16) << 8) | (gyro_z_l as i16),
+    };
+    
+    let temperature = ((temp_h as i16) << 8) | (temp_l as i16);
+    
+    rprintln!("MPU6050: Full read complete - Accel({},{},{}) Gyro({},{},{}) Temp={}",
+        accel.x, accel.y, accel.z, gyro.x, gyro.y, gyro.z, temperature);
     
     Ok(Mpu6050Data {
         accel,
