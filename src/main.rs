@@ -131,14 +131,16 @@ fn main() {
                     
                     // Use critical section to prevent interrupt during data processing
                     cortex_m::interrupt::free(|_| {
-                        let (ax, ay, az) = data.accel.to_g();
-                        let (gx, gy, gz) = data.gyro.to_dps();
-                        let temp = drivers::mpu6050_interrupt::temperature_to_celsius(data.temperature);
+                        // Use integer versions to avoid floating-point hardfaults
+                        let (ax, ay, az) = data.accel.to_g(); // Returns millig (1/1000 g)
+                        let (gx, gy, gz) = data.gyro.to_dps(); // Returns milli-degrees/sec
+                        let temp_raw = data.temperature;
                         
                         // Split the large rprintln into smaller ones to avoid stack issues
-                        rprintln!("MPU6050 [{}] Accel: X={:.2}, Y={:.2}, Z={:.2}", counter, ax, ay, az);
-                        rprintln!("MPU6050 [{}] Gyro: X={:.1}, Y={:.1}, Z={:.1}", counter, gx, gy, gz);
-                        rprintln!("MPU6050 [{}] Temp: {:.1}°C", counter, temp);
+                        // Display in millig and milli-degrees/sec to avoid floating point
+                        rprintln!("MPU6050 [{}] Accel(mg): X={}, Y={}, Z={}", counter, ax, ay, az);
+                        rprintln!("MPU6050 [{}] Gyro(mdps): X={}, Y={}, Z={}", counter, gx, gy, gz);
+                        rprintln!("MPU6050 [{}] Temp_raw: {}", counter, temp_raw);
                     });
                 }
                 Err(e) => {

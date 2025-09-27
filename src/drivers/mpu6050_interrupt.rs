@@ -294,7 +294,20 @@ pub fn mpu6050_clear_interrupt() -> Result<(), Mpu6050Error> {
 // Helper functions to convert raw values to physical units
 impl AccelData {
     /// Convert raw accelerometer values to g-force (assuming ±2g range)
-    pub fn to_g(&self) -> (f32, f32, f32) {
+    /// Using integer arithmetic to avoid floating-point issues
+    pub fn to_g(&self) -> (i32, i32, i32) {
+        // Convert to millig (1/1000 g) to avoid floating point
+        // ±2g range, 16-bit: 2000mg / 32768 = ~0.061mg per LSB
+        // Multiply by 61 then divide by 1000 to get millig
+        (
+            (self.x as i32 * 61) / 1000,
+            (self.y as i32 * 61) / 1000,
+            (self.z as i32 * 61) / 1000,
+        )
+    }
+    
+    /// Convert raw accelerometer values to floating point (safer version)
+    pub fn to_g_float(&self) -> (f32, f32, f32) {
         const ACCEL_SCALE: f32 = 2.0 / 32768.0; // ±2g range, 16-bit
         (
             self.x as f32 * ACCEL_SCALE,
@@ -305,8 +318,21 @@ impl AccelData {
 }
 
 impl GyroData {
-    /// Convert raw gyroscope values to degrees per second (assuming ±250°/s range)
-    pub fn to_dps(&self) -> (f32, f32, f32) {
+    /// Convert raw gyroscope values to degrees per second (integer version)
+    /// Using integer arithmetic to avoid floating-point issues  
+    pub fn to_dps(&self) -> (i32, i32, i32) {
+        // Convert to milli-degrees per second to avoid floating point
+        // ±250°/s range, 16-bit: 250000 mdps / 32768 = ~7.6 mdps per LSB
+        // Multiply by 76 then divide by 10 to get mdps
+        (
+            (self.x as i32 * 76) / 10,
+            (self.y as i32 * 76) / 10, 
+            (self.z as i32 * 76) / 10,
+        )
+    }
+    
+    /// Convert raw gyroscope values to floating point (safer version)
+    pub fn to_dps_float(&self) -> (f32, f32, f32) {
         const GYRO_SCALE: f32 = 250.0 / 32768.0; // ±250°/s range, 16-bit
         (
             self.x as f32 * GYRO_SCALE,
