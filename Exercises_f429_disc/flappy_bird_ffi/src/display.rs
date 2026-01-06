@@ -1,7 +1,8 @@
 use crate::config::*;
 use core::convert::TryInto;
 use core::ffi;
-use crate::color::{RED, BLACK}; // Fix color constants
+// Color constants not used in this module; remove to silence warnings.
+use crate::display_ffi;
 
 extern "C" {
     fn display_register_driver(driver: *const DisplayDriver);
@@ -20,7 +21,7 @@ extern "C" {
 
     static Font_16x26: FontDef;
 
-     fn display_game_title();
+    fn display_game_title();
     fn ili9341_write_string(
         x: i32,
         y: i32,
@@ -29,7 +30,6 @@ extern "C" {
         fg_color: u16,
         bg_color: u16,
     );
-
 }
 
 #[repr(C)]
@@ -45,16 +45,17 @@ pub struct FontDef {
     data: *const u16,
 }
 
+// Provide a const constructor so other modules can define the `Font_16x26` symbol.
+pub const fn font_16x26() -> FontDef {
+    FontDef { width: 16, height: 26, data: core::ptr::null() }
+}
+
 pub fn register_driver(driver: &DisplayDriver) {
-    unsafe {
-        display_register_driver(driver as *const DisplayDriver);
-    }
+    display_ffi::register_driver(driver);
 }
 
 pub fn init() {
-    unsafe {
-        display_init();
-    }
+    display_ffi::init();
 }
 
 pub fn draw_image(x: Coord, w: u32, y: Coord, h: u32, image_data: &[u16]) {
@@ -62,15 +63,11 @@ pub fn draw_image(x: Coord, w: u32, y: Coord, h: u32, image_data: &[u16]) {
     let y: u16 = y.try_into().expect("y co-ordinate is out of range");
     let w: u16 = w.try_into().expect("width out of range");
     let h: u16 = h.try_into().expect("height out of range");
-    unsafe {
-        display_draw_image(x, w, y, h, image_data.as_ptr());
-    }
+    display_ffi::draw_image_u16(x, w, y, h, image_data);
 }
 
 pub fn set_background_color(bg_color: u16) {
-    unsafe {
-        display_fill_screen(bg_color);
-    }
+    display_ffi::fill_screen(bg_color);
 }
 
 pub fn draw_rect_angle(x: Coord, w: u32, y: Coord, h: u32, color: u16) {
@@ -78,16 +75,11 @@ pub fn draw_rect_angle(x: Coord, w: u32, y: Coord, h: u32, color: u16) {
     let y: u16 = y.try_into().expect("y co-ordinate is out of range");
     let w: u16 = w.try_into().expect("width out of range");
     let h: u16 = h.try_into().expect("height out of range");
-    unsafe {
-        display_fill_rect(x, w, y, h, color);
-    }
+    display_ffi::fill_rect(x, w, y, h, color);
 }
 
 pub fn write_string(x: Coord, y: Coord, c_str: &ffi::CStr, color: u16, bgcolor: u16) {
     let x: u16 = x.try_into().expect("X co-ordinate is out of range");
     let y: u16 = y.try_into().expect("y co-ordinate is out of range");
-    unsafe {
-        //call  display_write_string
-        display_write_string(x, y, c_str.as_ptr(), Font_16x26, color, bgcolor);
-    }
+    display_ffi::write_string_u16(x, y, c_str, color, bgcolor);
 }

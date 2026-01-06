@@ -11,9 +11,13 @@ use crate::config::{
 use crate::display;
 use crate::obstacle;
 use crate::player;
+use core::sync::atomic::{AtomicU32, Ordering};
 
-extern "C" {
-    fn HAL_GetTick() -> u32;
+// Simple monotonic tick replacement for HAL_GetTick in a Rust-only build.
+// Advances by ~16ms per call to approximate frame progression.
+static TICK_MS: AtomicU32 = AtomicU32::new(0);
+fn HAL_GetTick() -> u32 {
+    TICK_MS.fetch_add(16, Ordering::Relaxed)
 }
 
 

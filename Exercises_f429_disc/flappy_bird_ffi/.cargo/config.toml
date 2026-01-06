@@ -4,7 +4,7 @@ target = "thumbv7em-none-eabihf"
 [target.thumbv7em-none-eabihf]
 linker = "arm-none-eabi-gcc"
 rustflags = [
-    "-C", "link-arg=-TSTM32F429ZITX_FLASH.ld",
+    "-C", "link-arg=-Tlink.x",
     "-C", "link-arg=-mcpu=cortex-m4",
     "-C", "link-arg=-mthumb",
     "-C", "link-arg=-mfpu=fpv4-sp-d16",

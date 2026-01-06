@@ -84,6 +84,7 @@
 
 mod game;
 mod display;
+mod display_ffi;
 mod assets;
 mod config;
 mod color;
@@ -96,12 +97,7 @@ use core::panic::PanicInfo;
 use crate::config::Coord;
 use crate::game::InputDevice;
 use game::Game;
-
-// External symbols defined in C
-extern "C" {
-    fn c_main();
-    static ili9341_display_driver: display::DisplayDriver;
-}
+use rtt_target::rtt_init_print;
 
 // Dummy input device for testing
 pub struct DummyInputDevice;
@@ -127,15 +123,11 @@ impl InputDevice for DummyInputDevice {
 
 // Entry point for Rust (called after `c_main`)
 #[no_mangle]
-pub extern "C" fn main() -> ! {
-    unsafe {
-        // Call low-level board initialization from C (clocks, GPIO, etc.)
-        c_main();
-        // Register your ILI9341 display driver provided by the C side
-        display::register_driver(&ili9341_display_driver);
-    }
-
-    display::init(); // Initialize display module
+fn main() -> ! {
+    // Init RTT before any logging
+    rtt_init_print!();
+    // With no C layer present, skip hardware init and driver registration.
+    display::init(); // No-op display init for Rust-only build
 
     let input = DummyInputDevice::new();
     let mut game_instance = Game::init(input).expect("Failed to initialize game");
