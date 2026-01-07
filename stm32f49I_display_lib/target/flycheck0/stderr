@@ -1,0 +1,90 @@
+   0.013103083s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="f429i_rect"}: cargo::core::compiler::fingerprint: stale: changed "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/f429i_rect.rs"
+   0.013114041s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="f429i_rect"}: cargo::core::compiler::fingerprint:           (vs) "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-3640ebcf798bb0e2/dep-example-f429i_rect"
+   0.013117208s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="f429i_rect"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1767806271, nanos: 435324421 } < FileTime { seconds: 1767806293, nanos: 733168958 }
+   0.013175541s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="f429i_rect"}: cargo::core::compiler::fingerprint: fingerprint dirty for stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)/Check { test: false }/TargetInner { kind: "example", name: "f429i_rect", tested: false, benched: false, ..: with_path("/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/f429i_rect.rs", Edition2024) }
+   0.013182750s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="f429i_rect"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-3640ebcf798bb0e2/dep-example-f429i_rect", reference_mtime: FileTime { seconds: 1767806271, nanos: 435324421 }, stale: "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/f429i_rect.rs", stale_mtime: FileTime { seconds: 1767806293, nanos: 733168958 } }))
+   0.013391416s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="init"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)/Check { test: false }/TargetInner { kind: "example", name: "init", tested: false, benched: false, ..: with_path("/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/init.rs", Edition2024) }
+   0.013396208s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="init"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-6410e0a98a70a437/example-init`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: std::backtrace::Backtrace::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+   0.015987000s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="rect"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)/Check { test: false }/TargetInner { kind: "example", name: "rect", tested: false, benched: false, ..: with_path("/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/rect.rs", Edition2024) }
+   0.015992416s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="rect"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-cc1e969880f6bb01/example-rect`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: std::backtrace::Backtrace::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+   0.016183833s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="triangle"}: cargo::core::compiler::fingerprint: stale: changed "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/triangle.rs"
+   0.016186500s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="triangle"}: cargo::core::compiler::fingerprint:           (vs) "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-998f55ba3e1ba2f7/dep-example-triangle"
+   0.016188541s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="triangle"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1767806209, nanos: 776191690 } < FileTime { seconds: 1767806293, nanos: 733176625 }
+   0.016241708s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="triangle"}: cargo::core::compiler::fingerprint: fingerprint dirty for stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)/Check { test: false }/TargetInner { kind: "example", name: "triangle", tested: false, benched: false, ..: with_path("/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/triangle.rs", Edition2024) }
+   0.016245791s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="triangle"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-998f55ba3e1ba2f7/dep-example-triangle", reference_mtime: FileTime { seconds: 1767806209, nanos: 776191690 }, stale: "/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/triangle.rs", stale_mtime: FileTime { seconds: 1767806293, nanos: 733176625 } }))
+   0.016427375s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="visual_rect"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)/Check { test: false }/TargetInner { kind: "example", name: "visual_rect", tested: false, benched: false, ..: with_path("/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/examples/visual_rect.rs", Edition2024) }
+   0.016431708s  INFO prepare_target{force=false package_id=stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib) target="visual_rect"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/debug/.fingerprint/stm32f49I_display_lib-b77a3aed8d8a58cc/example-visual_rect`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: std::backtrace::Backtrace::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+    Checking stm32f49I_display_lib v0.1.0 (/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib)
+error: could not compile `stm32f49I_display_lib` (example "init") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `stm32f49I_display_lib` (example "rect") due to 1 previous error
+error: could not compile `stm32f49I_display_lib` (example "visual_rect") due to 2 previous errors; 1 warning emitted
