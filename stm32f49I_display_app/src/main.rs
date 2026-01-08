@@ -12,7 +12,7 @@ mod demo;
 #[entry]
 fn main() -> ! {
     let mut panel = hw::init();
-    demo::f429_rect(&mut panel);
+    demo::f429_rect(&mut panel, hw::Rgb565::RED);
 
     loop {
         cortex_m::asm::bkpt();

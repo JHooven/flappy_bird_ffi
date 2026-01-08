@@ -14,6 +14,16 @@ impl Rgb565 {
         let b5 = (b as u16 >> 3) & 0x1F;
         Rgb565((r5 << 11) | (g6 << 5) | b5)
     }
+
+    pub const BLACK: Rgb565 = Rgb565(0x0000);
+    pub const WHITE: Rgb565 = Rgb565(0xFFFF);
+    pub const RED: Rgb565 = Rgb565(0xF800);
+    pub const GREEN: Rgb565 = Rgb565(0x07E0);
+    pub const BLUE: Rgb565 = Rgb565(0x001F);
+    pub const YELLOW: Rgb565 = Rgb565(0xFFE0);
+    pub const CYAN: Rgb565 = Rgb565(0x07FF);
+    pub const MAGENTA: Rgb565 = Rgb565(0xF81F);
+    pub const GRAY: Rgb565 = Rgb565(0x8410);
 }
 
 pub struct Gc9a01Parallel {
