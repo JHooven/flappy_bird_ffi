@@ -1,0 +1,204 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "cargo build (embedded debug)",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["build", "--target", "thumbv7em-none-eabihf"],
+      "group": "build",
+      "problemMatcher": ["$rustc"],
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "cargo build (embedded release)",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["build", "--release", "--target", "thumbv7em-none-eabihf"],
+      "group": "build",
+      "problemMatcher": ["$rustc"],
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "flash (OpenOCD release)",
+      "type": "shell",
+      "command": "openocd",
+      "args": [
+        "-f", "interface/stlink.cfg",
+        "-f", "target/stm32f4x.cfg",
+        "-c", "program ${workspaceFolder}/target/thumbv7em-none-eabihf/release/stm32f49I_display_app verify reset exit"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "flash (OpenOCD debug)",
+      "type": "shell",
+      "command": "openocd",
+      "args": [
+        "-f", "interface/stlink.cfg",
+        "-f", "target/stm32f4x.cfg",
+        "-c", "program ${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app verify reset exit"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "openocd gdb-server",
+      "type": "shell",
+      "command": "openocd",
+      "args": ["-f", "interface/stlink.cfg", "-f", "target/stm32f4x.cfg"],
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "owner": "openocd",
+          "pattern": { "regexp": ".*", "file": 1, "line": 1, "column": 1, "message": 0 },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".*Open On-Chip Debugger.*",
+            "endsPattern": ".*Listening on port 3333 for gdb connections.*"
+          }
+        }
+      ]
+    },
+    {
+      "label": "gdb vector check (debug)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-vector-check.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "gdb vector check (release)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/release/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-vector-check.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "nm stack symbols (debug)",
+      "type": "shell",
+      "command": "arm-none-eabi-nm",
+      "args": [
+        "-C",
+        "--defined-only",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "gdb fault inspect (debug)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-fault-inspect.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "gdb fault inspect (release)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/release/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-fault-inspect.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "gdb fault inspect FAULT_INFO (debug)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-fault-inspection-fi.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "gdb fault inspect FAULT_INFO (release)",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/release/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-fault-inspection-fi.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "vector check (start server + debug)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb vector check (debug)"]
+    },
+    {
+      "label": "vector check (start server + release)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb vector check (release)"]
+    },
+    {
+      "label": "fault inspect (start server + debug)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb fault inspect (debug)"]
+    },
+    {
+      "label": "fault inspect (start server + release)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb fault inspect (release)"]
+    },
+    {
+      "label": "fault inspect FAULT_INFO (start server + debug)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb fault inspect FAULT_INFO (debug)"]
+    },
+    {
+      "label": "fault inspect FAULT_INFO (start server + release)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb fault inspect FAULT_INFO (release)"]
+    }
+    ,
+    {
+      "label": "build + flash (debug)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["cargo build (embedded debug)", "flash (OpenOCD debug)"]
+    },
+    {
+      "label": "build + flash (release)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["cargo build (embedded release)", "flash (OpenOCD release)"]
+    },
+    {
+      "label": "build + flash + vector check (debug)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "cargo build (embedded debug)",
+        "flash (OpenOCD debug)",
+        "vector check (start server + debug)"
+      ]
+    }
+  ]
+}

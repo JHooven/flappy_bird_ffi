@@ -1,0 +1,8 @@
+/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/target/thumbv7em-none-eabihf/debug/deps/deranged-bff5bc4663b904c0.d: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/lib.rs /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/unsafe_wrapper.rs
+
+/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/target/thumbv7em-none-eabihf/debug/deps/libderanged-bff5bc4663b904c0.rlib: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/lib.rs /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/unsafe_wrapper.rs
+
+/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/target/thumbv7em-none-eabihf/debug/deps/libderanged-bff5bc4663b904c0.rmeta: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/lib.rs /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/unsafe_wrapper.rs
+
+/Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/lib.rs:
+/Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deranged-0.5.5/src/unsafe_wrapper.rs:
