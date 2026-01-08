@@ -1,4 +1,5 @@
 use crate::display::Rgb565;
+use crate::display::Layer;
 
 pub trait PixelSink {
     fn size(&self) -> (u16, u16);
@@ -9,6 +10,20 @@ pub trait PixelSink {
 impl PixelSink for crate::display::Display {
     fn size(&self) -> (u16, u16) { self.size() }
     fn set_pixel(&mut self, x: u16, y: u16, color: Rgb565) { self.set_pixel_unchecked(x, y, color) }
+}
+
+/// Layer-capable pixel sink
+pub trait PixelSinkLayers {
+    fn size(&self) -> (u16, u16);
+    fn set_pixel_in_layer(&mut self, layer: Layer, x: u16, y: u16, color: Rgb565);
+}
+
+#[cfg(feature = "std")]
+impl PixelSinkLayers for crate::display::Display {
+    fn size(&self) -> (u16, u16) { self.size() }
+    fn set_pixel_in_layer(&mut self, layer: Layer, x: u16, y: u16, color: Rgb565) {
+        self.set_pixel_unchecked_in_layer(layer, x, y, color)
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -104,6 +119,25 @@ pub fn draw_rectangle_outline<S: PixelSink>(
     Ok(())
 }
 
+/// Layer-aware version: draws the rectangle outline into the specified layer.
+pub fn draw_rectangle_outline_on_layer<S: PixelSinkLayers>(
+    disp: &mut S,
+    rect: Rect,
+    color: Rgb565,
+    thickness: u16,
+    layer: Layer,
+) -> Result<(), crate::display::Error> {
+    // Wrap the layered sink with a layer-fixed adapter implementing PixelSink
+    struct LayerAdapter<'a, T: PixelSinkLayers> { s: &'a mut T, l: Layer }
+    impl<'a, T: PixelSinkLayers> PixelSink for LayerAdapter<'a, T> {
+        fn size(&self) -> (u16, u16) { self.s.size() }
+        fn set_pixel(&mut self, x: u16, y: u16, color: Rgb565) { self.s.set_pixel_in_layer(self.l, x, y, color) }
+    }
+
+    let mut adapter = LayerAdapter { s: disp, l: layer };
+    draw_rectangle_outline(&mut adapter, rect, color, thickness)
+}
+
 fn fill_span_rect<S: PixelSink>(
     disp: &mut S,
     x: i32,
@@ -170,5 +204,23 @@ pub fn draw_triangle_outline<S: PixelSink>(
     draw_line(disp, b.x, b.y, c.x, c.y, color, thickness);
     draw_line(disp, c.x, c.y, a.x, a.y, color, thickness);
     Ok(())
+}
+
+/// Layer-aware version: draws the triangle outline into the specified layer.
+pub fn draw_triangle_outline_on_layer<S: PixelSinkLayers>(
+    disp: &mut S,
+    tri: Triangle,
+    color: Rgb565,
+    thickness: u16,
+    layer: Layer,
+) -> Result<(), crate::display::Error> {
+    struct LayerAdapter<'a, T: PixelSinkLayers> { s: &'a mut T, l: Layer }
+    impl<'a, T: PixelSinkLayers> PixelSink for LayerAdapter<'a, T> {
+        fn size(&self) -> (u16, u16) { self.s.size() }
+        fn set_pixel(&mut self, x: u16, y: u16, color: Rgb565) { self.s.set_pixel_in_layer(self.l, x, y, color) }
+    }
+
+    let mut adapter = LayerAdapter { s: disp, l: layer };
+    draw_triangle_outline(&mut adapter, tri, color, thickness)
 }
 

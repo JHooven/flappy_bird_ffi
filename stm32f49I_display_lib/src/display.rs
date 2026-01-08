@@ -34,6 +34,12 @@ pub struct DisplayConfig {
     pub pixel_format: PixelFormat,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Layer {
+    Layer1,
+    Layer2,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     InvalidDimensions,
@@ -58,7 +64,8 @@ pub struct Display {
     height: u16,
     orientation: Orientation,
     pixel_format: PixelFormat,
-    framebuffer: std::vec::Vec<u16>, // RGB565 pixels
+    framebuffer_l1: std::vec::Vec<u16>, // RGB565 pixels - Layer1
+    framebuffer_l2: std::vec::Vec<u16>, // RGB565 pixels - Layer2
 }
 
 #[cfg(feature = "std")]
@@ -71,13 +78,15 @@ pub fn init_display(cfg: DisplayConfig) -> Result<Display, Error> {
     }
 
     let len = cfg.width as usize * cfg.height as usize;
-    let framebuffer = vec![Rgb565::BLACK.0; len];
+    let framebuffer_l1 = vec![Rgb565::BLACK.0; len];
+    let framebuffer_l2 = vec![Rgb565::BLACK.0; len];
     Ok(Display {
         width: cfg.width,
         height: cfg.height,
         orientation: cfg.orientation,
         pixel_format: cfg.pixel_format,
-        framebuffer,
+        framebuffer_l1,
+        framebuffer_l2,
     })
 }
 
@@ -88,20 +97,50 @@ impl Display {
     pub fn pixel_format(&self) -> PixelFormat { self.pixel_format }
 
     pub fn clear(&mut self, color: Rgb565) -> Result<(), Error> {
-        self.framebuffer.fill(color.0);
+        // For backward-compat, clear both layers
+        self.framebuffer_l1.fill(color.0);
+        self.framebuffer_l2.fill(color.0);
         Ok(())
     }
 
     pub fn get_pixel(&self, x: u16, y: u16) -> Option<Rgb565> {
         if x >= self.width || y >= self.height { return None; }
         let idx = y as usize * self.width as usize + x as usize;
-        self.framebuffer.get(idx).copied().map(Rgb565)
+        self.framebuffer_l1.get(idx).copied().map(Rgb565)
     }
 
     pub(crate) fn set_pixel_unchecked(&mut self, x: u16, y: u16, color: Rgb565) {
         let idx = y as usize * self.width as usize + x as usize;
-        if let Some(px) = self.framebuffer.get_mut(idx) {
+        if let Some(px) = self.framebuffer_l1.get_mut(idx) {
             *px = color.0;
+        }
+    }
+
+    pub fn clear_layer(&mut self, layer: Layer, color: Rgb565) {
+        match layer {
+            Layer::Layer1 => self.framebuffer_l1.fill(color.0),
+            Layer::Layer2 => self.framebuffer_l2.fill(color.0),
+        }
+    }
+
+    pub fn get_pixel_from_layer(&self, layer: Layer, x: u16, y: u16) -> Option<Rgb565> {
+        if x >= self.width || y >= self.height { return None; }
+        let idx = y as usize * self.width as usize + x as usize;
+        match layer {
+            Layer::Layer1 => self.framebuffer_l1.get(idx).copied().map(Rgb565),
+            Layer::Layer2 => self.framebuffer_l2.get(idx).copied().map(Rgb565),
+        }
+    }
+
+    pub(crate) fn set_pixel_unchecked_in_layer(&mut self, layer: Layer, x: u16, y: u16, color: Rgb565) {
+        let idx = y as usize * self.width as usize + x as usize;
+        match layer {
+            Layer::Layer1 => {
+                if let Some(px) = self.framebuffer_l1.get_mut(idx) { *px = color.0; }
+            }
+            Layer::Layer2 => {
+                if let Some(px) = self.framebuffer_l2.get_mut(idx) { *px = color.0; }
+            }
         }
     }
 
