@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["build", "--target", "thumbv7em-none-eabihf"],
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "flash-openocd",
+      "type": "shell",
+      "command": "openocd",
+      "args": [
+        "-s", "/opt/homebrew/share/openocd/scripts",
+        "-f", "interface/stlink.cfg",
+        "-f", "target/stm32f4x.cfg",
+        "-c",
+        "init; reset halt; program ${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app verify; reset run; shutdown"
+      ],
+      "dependsOn": ["build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "objcopy",
+      "type": "shell",
+      "command": "arm-none-eabi-objcopy",
+      "args": [
+        "-O",
+        "binary",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app.bin"
+      ],
+      "dependsOn": ["build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "flash-stlink",
+      "type": "shell",
+      "command": "st-flash",
+      "args": [
+        "--reset",
+        "write",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app.bin",
+        "0x08000000"
+      ],
+      "dependsOn": ["objcopy"],
+      "problemMatcher": []
+    }
+  ]
+}

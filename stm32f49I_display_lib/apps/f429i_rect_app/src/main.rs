@@ -2,7 +2,7 @@
 #![no_main]
 
 use panic_halt as _;
-use cortex_m_rt::entry;
+use cortex_m_rt::{entry, exception, ExceptionFrame};
 
 use stm32f4xx_hal as hal;
 use hal::{
@@ -172,4 +172,21 @@ fn main() -> ! {
     draw_rect_outline(&mut panel, 20, 30, 180, 120, 4, color);
 
     loop { cortex_m::asm::wfi(); }
+}
+
+// Break into debugger on faults/unknown IRQs to inspect state.
+#[exception]
+fn HardFault(_ef: &ExceptionFrame) -> ! {
+    cortex_m::asm::bkpt();
+    loop {}
+}
+
+#[exception]
+fn DefaultHandler(_irqn: i16) {
+    cortex_m::asm::bkpt();
+}
+
+#[exception]
+fn SysTick() {
+    cortex_m::asm::bkpt();
 }

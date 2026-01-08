@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug: app f429i_rect (OpenOCD)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app",
+      "preLaunchTask": "build",
+      "configFiles": ["interface/stlink.cfg", "target/stm32f4x.cfg"],
+      "searchDir": ["/opt/homebrew/share/openocd/scripts"],
+      "serverpath": "openocd",
+      "gdbPath": "arm-none-eabi-gdb",
+      "runToMain": true,
+      "postLaunchCommands": [
+        "directory ${workspaceFolder}",
+        "break main"
+      ]
+    },
+    {
+      "name": "Debug: app f429i_rect (ST-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "stlink",
+      "device": "STM32F429ZI",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/f429i_rect_app",
+      "preLaunchTask": "build",
+      "runToMain": true,
+      "postLaunchCommands": [
+        "directory ${workspaceFolder}",
+        "break main"
+      ]
+    }
+  ]
+}
