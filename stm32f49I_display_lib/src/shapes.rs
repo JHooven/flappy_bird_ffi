@@ -61,16 +61,20 @@ pub fn draw_rectangle_outline<S: PixelSink>(
         return Ok(()); // fully off-screen
     }
 
-    // Top edge: y in [rect.y, rect.y + t)
-    fill_span_rect(disp, rect.x, rect.y, rect.width, thickness, color);
+    // Clamp edge thickness to rectangle dimensions
+    let top_h = thickness.min(rect.height);
+    let side_w = thickness.min(rect.width);
+
+    // Top edge: y in [rect.y, rect.y + top_h)
+    fill_span_rect(disp, rect.x, rect.y, rect.width, top_h, color);
     // Bottom edge
     if rect.height > thickness {
         fill_span_rect(
             disp,
             rect.x,
-            rect.y + rect.height as i32 - t,
+            rect.y + rect.height as i32 - top_h as i32,
             rect.width,
-            thickness,
+            top_h,
             color,
         );
     } else {
@@ -78,14 +82,21 @@ pub fn draw_rectangle_outline<S: PixelSink>(
     }
 
     // Left edge
-    fill_span_rect(disp, rect.x, rect.y + t, thickness, rect.height.saturating_sub(thickness * 2), color);
+    fill_span_rect(
+        disp,
+        rect.x,
+        rect.y + t,
+        side_w,
+        rect.height.saturating_sub(thickness * 2),
+        color,
+    );
     // Right edge
     if rect.width > thickness {
         fill_span_rect(
             disp,
-            rect.x + rect.width as i32 - t,
+            rect.x + rect.width as i32 - side_w as i32,
             rect.y + t,
-            thickness,
+            side_w,
             rect.height.saturating_sub(thickness * 2),
             color,
         );
@@ -153,6 +164,7 @@ pub fn draw_triangle_outline<S: PixelSink>(
 ) -> Result<(), crate::display::Error> {
     if thickness == 0 { return Ok(()); }
     let Triangle { a, b, c } = tri;
+    if a == b && b == c { return Ok(()); }
     // If degenerate (all same), no-op. If colinear, draw the three lines (which will overlap).
     draw_line(disp, a.x, a.y, b.x, b.y, color, thickness);
     draw_line(disp, b.x, b.y, c.x, c.y, color, thickness);

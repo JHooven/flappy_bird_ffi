@@ -149,7 +149,7 @@ fn main() -> ! {
 
     // Configure clocks per provided spec (72 MHz)
     let rcc = dp.RCC.constrain();
-    let clocks = rcc.cfgr.sysclk(72.MHz()).freeze();
+    let _clocks = rcc.cfgr.sysclk(72.MHz()).freeze();
 
     // Acquire GPIO ports
     let gpioa = dp.GPIOA.split();
@@ -173,7 +173,6 @@ fn main() -> ! {
     let d6 = gpiob.pb11.into_push_pull_output();
     let d7 = gpiob.pb10.into_push_pull_output();
 
-    use stm32f4xx_hal::dwt::Delay;
     let mut panel = Gc9a01Parallel { cs, wr, rd, dc, rst, bl, d0, d1, d2, d3, d4, d5, d6, d7 };
     panel.init();
 
@@ -188,7 +187,4 @@ fn main() -> ! {
     loop { cortex_m::asm::wfi(); }
 }
 
-#[cfg(not(feature = "hw-ili9341"))]
-fn main() {
-    println!("Feature 'hw-ili9341' not enabled. Re-run with --features hw-ili9341.");
-}
+

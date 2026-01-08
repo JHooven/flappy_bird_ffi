@@ -66,3 +66,50 @@ fn fully_offscreen_draws_nothing() {
     draw_rectangle_outline(&mut d, Rect { x: 15, y: 15, width: 3, height: 3 }, c, 1).unwrap();
     assert_eq!(count_color(&d, c), 0);
 }
+
+#[test]
+fn fullscreen_thickness_one_perimeter_count() {
+    let (w, h) = (12, 8);
+    let mut d = mk_display(w, h);
+    let c = Rgb565::from_rgb888(255, 0, 0);
+    draw_rectangle_outline(&mut d, Rect { x: 0, y: 0, width: w, height: h }, c, 1).unwrap();
+    let expected = 2 * ((w + h) as usize) - 4; // perimeter pixels
+    assert_eq!(count_color(&d, c), expected);
+}
+
+#[test]
+fn fullscreen_thickness_two_border_area() {
+    let (w, h, t) = (12u16, 8u16, 2u16);
+    let mut d = mk_display(w, h);
+    let c = Rgb565::from_rgb888(0, 255, 0);
+    draw_rectangle_outline(&mut d, Rect { x: 0, y: 0, width: w, height: h }, c, t).unwrap();
+    let w_usize = w as usize; let h_usize = h as usize; let t_usize = t as usize;
+    let inner_w = w_usize.saturating_sub(2 * t_usize);
+    let inner_h = h_usize.saturating_sub(2 * t_usize);
+    let expected = (w_usize * h_usize) - (inner_w * inner_h);
+    assert_eq!(count_color(&d, c), expected);
+}
+
+#[test]
+fn last_draw_wins_on_overlap() {
+    let mut d = mk_display(16, 12);
+    let a = Rgb565::from_rgb888(10, 10, 240);
+    let b = Rgb565::from_rgb888(240, 10, 10);
+    let rect = Rect { x: 2, y: 2, width: 12, height: 8 };
+    draw_rectangle_outline(&mut d, rect, a, 2).unwrap();
+    // Overdraw with a different color and same geometry
+    draw_rectangle_outline(&mut d, rect, b, 2).unwrap();
+    // Border pixels should now be only color B
+    assert_eq!(count_color(&d, a), 0);
+    assert!(count_color(&d, b) > 0);
+}
+
+#[test]
+fn thick_small_rect_fills_area() {
+    let mut d = mk_display(10, 10);
+    let c = Rgb565::from_rgb888(0, 0, 255);
+    let rect = Rect { x: 3, y: 3, width: 4, height: 3 };
+    // Thickness far exceeds side/2; outline should fill the rect area
+    draw_rectangle_outline(&mut d, rect, c, 10).unwrap();
+    assert_eq!(count_color(&d, c), (rect.width as usize) * (rect.height as usize));
+}

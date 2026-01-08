@@ -1,0 +1,1 @@
+/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/apps/f429i_rect_app/target/thumbv7em-none-eabihf/debug/f429i_rect_app: /Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/apps/f429i_rect_app/src/main.rs

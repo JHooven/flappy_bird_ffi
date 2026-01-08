@@ -54,3 +54,35 @@ fn fully_offscreen_draws_nothing() {
     draw_triangle_outline(&mut d, tri, c, 1).unwrap();
     assert_eq!(count_color(&d, c), 0);
 }
+
+#[test]
+fn degenerate_same_points_is_noop() {
+    let mut d = mk_display(16, 16);
+    let c = Rgb565::from_rgb888(255, 50, 50);
+    let p = Point { x: 8, y: 8 };
+    let tri = Triangle { a: p, b: p, c: p };
+    draw_triangle_outline(&mut d, tri, c, 3).unwrap();
+    assert_eq!(count_color(&d, c), 0);
+}
+
+#[test]
+fn colinear_points_draw_overlapping_line() {
+    let mut d = mk_display(20, 20);
+    let c = Rgb565::from_rgb888(10, 200, 10);
+    let tri = Triangle { a: Point { x: 2, y: 2 }, b: Point { x: 10, y: 10 }, c: Point { x: 18, y: 18 } };
+    draw_triangle_outline(&mut d, tri, c, 2).unwrap();
+    let n = count_color(&d, c);
+    assert!(n > 0);
+}
+
+#[test]
+fn very_thick_triangle_is_clipped() {
+    let mut d = mk_display(15, 10);
+    let c = Rgb565::from_rgb888(0, 0, 255);
+    let tri = Triangle { a: Point { x: 5, y: 1 }, b: Point { x: 14, y: 5 }, c: Point { x: 1, y: 8 } };
+    draw_triangle_outline(&mut d, tri, c, 50).unwrap();
+    let (w, h) = d.size();
+    let total = (w as usize) * (h as usize);
+    let n = count_color(&d, c);
+    assert!(n > 0 && n <= total);
+}

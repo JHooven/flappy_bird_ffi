@@ -9,12 +9,11 @@ fn checksum(disp: &stm32f49I_display_lib::Display) -> u64 {
     acc
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let cfg = DisplayConfig { width: 16, height: 12, orientation: Orientation::Portrait, pixel_format: PixelFormat::Rgb565 };
-    let mut disp = init_display(cfg)?;
-    disp.clear(Rgb565::BLACK)?;
+    let mut disp = init_display(cfg).expect("init display");
+    disp.clear(Rgb565::BLACK).expect("clear");
     let red = Rgb565::from_rgb888(220, 20, 60);
-    draw_rectangle_outline(&mut disp, Rect { x: 2, y: 2, width: 10, height: 8 }, red, 2)?;
+    draw_rectangle_outline(&mut disp, Rect { x: 2, y: 2, width: 10, height: 8 }, red, 2).expect("draw rect");
     println!("checksum={} size={:?}", checksum(&disp), disp.size());
-    Ok(())
 }

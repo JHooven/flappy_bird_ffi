@@ -1,20 +1,19 @@
 use std::io::{self, Write};
-use std::path::PathBuf;
 use stm32f49I_display_lib::{
     draw_rectangle_outline, init_display, DisplayConfig, Orientation, PixelFormat, Rect, Rgb565,
 };
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let cfg = DisplayConfig { width: 160, height: 120, orientation: Orientation::Landscape, pixel_format: PixelFormat::Rgb565 };
-    let mut disp = init_display(cfg)?;
-    disp.clear(Rgb565::from_rgb888(16, 16, 16))?;
+    let mut disp = init_display(cfg).expect("init display");
+    disp.clear(Rgb565::from_rgb888(16, 16, 16)).expect("clear");
 
     let red = Rgb565::from_rgb888(220, 20, 60);
-    draw_rectangle_outline(&mut disp, Rect { x: 10, y: 8, width: 120, height: 80 }, red, 3)?;
+    draw_rectangle_outline(&mut disp, Rect { x: 10, y: 8, width: 120, height: 80 }, red, 3).expect("draw");
 
     let mut path = std::env::temp_dir();
     path.push("visual_rect.ppm");
-    disp.save_ppm(&path)?;
+    disp.save_ppm(&path).expect("save ppm");
 
     println!("Saved image to {}", path.display());
     #[cfg(target_os = "macos")]
@@ -26,11 +25,15 @@ fn main() -> anyhow::Result<()> {
     print!("Confirm [y/N]: ");
     io::stdout().flush().ok();
     let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
+    if io::stdin().read_line(&mut input).is_err() {
+        eprintln!("Failed to read input");
+        std::process::exit(1);
+    }
     if input.trim().eq_ignore_ascii_case("y") {
         println!("✅ Confirmed by user.");
-        Ok(())
+        return;
     } else {
-        anyhow::bail!("User did not confirm visual output");
+        eprintln!("User did not confirm visual output");
+        std::process::exit(1);
     }
 }

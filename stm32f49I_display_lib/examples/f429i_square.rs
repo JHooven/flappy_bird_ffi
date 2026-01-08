@@ -87,6 +87,28 @@ impl Gc9a01Parallel {
         self.write_data_u8((data & 0xFF) as u8);
     }
 
+    fn begin_addr_window(&mut self, x0: u16, y0: u16, x1: u16, y1: u16) {
+        // Column Address Set (CASET 0x2A)
+        self.write_cmd(0x2A);
+        self.write_data_u16_be(x0);
+        self.write_data_u16_be(x1);
+        // Page Address Set (PASET 0x2B)
+        self.write_cmd(0x2B);
+        self.write_data_u16_be(y0);
+        self.write_data_u16_be(y1);
+        // Memory Write (RAMWR 0x2C)
+        self.write_cmd(0x2C);
+    }
+
+    fn fill_rect(&mut self, x0: u16, y0: u16, x1: u16, y1: u16, color: Rgb565) {
+        // Assumes CS is already low
+        self.begin_addr_window(x0, y0, x1, y1);
+        let px = ((x1 as u32 - x0 as u32 + 1) * (y1 as u32 - y0 as u32 + 1)) as u32;
+        for _ in 0..px {
+            self.write_data_u16_be(color.0);
+        }
+    }
+
     fn set_addr_window(&mut self, x: u16, y: u16) {
         // Column Address Set (CASET 0x2A)
         self.write_cmd(0x2A);
@@ -179,6 +201,12 @@ fn main() -> ! {
 
     // Wrap in our PixelSink adapter
     let mut lcd = Ili9341Display { drv: panel, width: 320, height: 240 };
+
+    // Quick sanity: fill screen to verify wiring/backlight
+    {
+        let color = Rgb565::from_rgb888(0, 0, 255); // blue
+        lcd.drv.fill_rect(0, 0, lcd.width - 1, lcd.height - 1, color);
+    }
 
     // Compute a centered square and draw an outline
     let (w, h) = lcd.size();

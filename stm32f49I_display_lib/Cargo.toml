@@ -29,3 +29,29 @@ hw-ili9341 = [
 	"dep:panic-halt",
 	"dep:stm32f4xx-hal",
 ]
+hw-onboard-lcd = [
+	"dep:embedded-hal",
+	"dep:cortex-m",
+	"dep:cortex-m-rt",
+	"dep:panic-halt",
+	"dep:stm32f4xx-hal",
+]
+
+# Optional hardware selection flags for FMC onboard LCD example
+# RS address line selection (default: rs-a16)
+rs-a16 = []
+rs-a17 = []
+rs-a18 = []
+# Backlight pin selection on GPIOB (default: bl-pb1)
+bl-pb1 = []
+bl-pb5 = []
+
+[profile.dev]
+# Ensure rich debug info and predictable line mappings for embedded debugging
+opt-level = 0
+debug = 2
+debug-assertions = true
+lto = false
+codegen-units = 1
+incremental = true
+remap-debuginfo = false
