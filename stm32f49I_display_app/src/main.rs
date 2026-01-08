@@ -8,11 +8,15 @@ use core::mem::MaybeUninit;
 
 mod hw;
 mod demo;
+mod onboard_disc1;
 
 #[entry]
 fn main() -> ! {
-    let mut panel = hw::init();
-    demo::f429_rect(&mut panel, hw::Rgb565::RED);
+    // STM32F429I-DISC1: onboard ILI9341 is on SPI5
+    let _lcd = onboard_disc1::Ili9341Spi::init_and_take();
+    // Fill background for visibility, then draw a red rectangle border
+    onboard_disc1::Ili9341Spi::fill_rect(0, 0, 240, 320, hw::Rgb565::WHITE.0);
+    onboard_disc1::draw_rect_outline(10, 10, 220, 300, hw::Rgb565::RED.0);
 
     loop {
         cortex_m::asm::bkpt();

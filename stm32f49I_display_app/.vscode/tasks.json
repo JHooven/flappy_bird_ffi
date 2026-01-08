@@ -182,6 +182,24 @@
     }
     ,
     {
+      "label": "gdb lcd id scan",
+      "type": "shell",
+      "command": "arm-none-eabi-gdb",
+      "args": [
+        "-q",
+        "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app",
+        "-x",
+        "${workspaceFolder}/gdb-lcd-id-scan.gdb"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "lcd id scan (start server)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["openocd gdb-server", "gdb lcd id scan"]
+    },
+    {
       "label": "build + flash (debug)",
       "dependsOrder": "sequence",
       "dependsOn": ["cargo build (embedded debug)", "flash (OpenOCD debug)"]
