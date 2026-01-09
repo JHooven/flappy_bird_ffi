@@ -1,1 +1,0 @@
-/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/target/thumbv7em-none-eabihf/debug/stm32f49I_display_app: /Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/src/demo.rs /Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/src/hw.rs /Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_app/src/main.rs

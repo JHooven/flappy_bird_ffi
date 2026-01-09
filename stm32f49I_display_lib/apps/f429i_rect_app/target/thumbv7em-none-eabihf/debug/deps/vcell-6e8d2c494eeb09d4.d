@@ -1,7 +1,0 @@
-/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/apps/f429i_rect_app/target/thumbv7em-none-eabihf/debug/deps/vcell-6e8d2c494eeb09d4.d: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vcell-0.1.3/src/lib.rs
-
-/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/apps/f429i_rect_app/target/thumbv7em-none-eabihf/debug/deps/libvcell-6e8d2c494eeb09d4.rlib: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vcell-0.1.3/src/lib.rs
-
-/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/apps/f429i_rect_app/target/thumbv7em-none-eabihf/debug/deps/libvcell-6e8d2c494eeb09d4.rmeta: /Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vcell-0.1.3/src/lib.rs
-
-/Users/hoov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vcell-0.1.3/src/lib.rs:

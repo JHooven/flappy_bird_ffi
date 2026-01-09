@@ -1,5 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Prompting Workflow (PROMPTS.md)
-    url: https://github.com/<org>/<repo>/blob/main/PROMPTS.md
-    about: Read the workflow and templates before filing an issue.

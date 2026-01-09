@@ -1,3 +1,0 @@
-cargo:rustc-link-search=/Users/hoov/repos/udemy/embedded-rust/stm32f49I_display_lib/target/thumbv7em-none-eabihf/debug/build/stm32f4-325fbca764d76462/out
-cargo:rerun-if-changed=src/stm32f429/device.x
-cargo:rerun-if-changed=build.rs
